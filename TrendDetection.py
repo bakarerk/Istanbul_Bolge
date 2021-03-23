@@ -26,7 +26,7 @@ DOI = "" #Date of your interest (if you had any major activity which could possi
 
       #you can keep DOI = "" if you want to plot all significant changes in the KPIs.
 
-KEY = ["Device", "Second_Key", "Third_Key"] #Example can be like RNC, NodeB, CellName
+KEY = ["CellName"] #Example can be like RNC, NodeB, CellName
 
 TIMEINDEX = "Timestamp"
 
@@ -104,7 +104,7 @@ for i in KEY:
 
 #step 3, create a temp dataframe with KPIs only to check deviations and keey a backup of original frame as well
 
-df_temp = df[ [x for x in df.columns if x not in KEY]] #keep df without the KEYS.
+df_temp = df[[x for x in df.columns if x not in KEY]] #keep df without the KEYS.
 df2 = df.copy()
 
 # step 4, Here we create columns for moving averages and moving standard deviations for each KPI
