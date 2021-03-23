@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
-#from pandas import ExcelWriter
-#from pandas import ExcelFile
+from pandas import ExcelWriter
+from pandas import ExcelFile
 from functools import reduce
+import os
+cwd = os.getcwd()
 
 def siteid(site):
     if site[0] == "B":
@@ -83,7 +85,7 @@ dude_final = reduce(lambda left, right: pd.merge(left, right, on='COMMON ID'), d
 dude_final["SITEID"] = dude_final["COMMON ID"].apply(siteidTamamla)
 dude_final.to_excel("dude_final.xlsx")
 
-lteDB = pd.read_csv('LTE_Engineering_CellDB.xls', sep="\t", low_memory=False)
+lteDB = pd.read_csv(cwd + '/LTE_Engineering_CellDB.xls', sep="\t", low_memory=False)
 lteDB["SITEID"] = lteDB["EnodebName"].apply(siteid)
 lteIndoor = lteDB.loc[lteDB["CellType"] == "INDOOR"]
 lteIndoor = lteIndoor[["SITEID", "CellType"]]
@@ -93,20 +95,20 @@ lteDB = lteDB[["SITEID", "SiteEARFCNs", "City", "DISTRICT"]]
 lteDB.dropna(subset=["City", "DISTRICT"], inplace=True)
 lteDB = lteDB.drop_duplicates()
 
-umtsDB = pd.read_csv('UMTS_Engineering_CellDB.xls', sep="\t", low_memory=False)
+umtsDB = pd.read_csv(cwd + '/UMTS_Engineering_CellDB.xls', sep="\t", low_memory=False)
 umtsDB["SITEID"] = umtsDB["NODEBNAME"].apply(siteid)
 umtsDB = umtsDB[["SITEID", "City", "DISTRICT"]]
 umtsDB.dropna(subset=["City", "DISTRICT"], inplace=True)
 umtsDB = umtsDB.drop_duplicates()
 
-gsmDB = pd.read_csv('GSM_Engineering_CellDB.xls', sep="\t", low_memory=False)
+gsmDB = pd.read_csv(cwd + '\GSM_Engineering_CellDB.xls', sep="\t", low_memory=False)
 gsmDB.dropna(subset=["SITE_NAME"], inplace=True)
 gsmDB["SITEID"] = gsmDB["SITE_NAME"].apply(siteid)
 gsmDB = gsmDB[["SITEID", "CITY", "DISTRICT"]]
 gsmDB.dropna(subset=["CITY", "DISTRICT"], inplace=True)
 gsmDB = gsmDB.drop_duplicates()
 
-traffic2G = pd.read_excel('2G.xlsx', sheet_name='Sheet')
+traffic2G = pd.read_excel(cwd + '/2G.xlsx', sheet_name='Sheet')
 traffic2G = traffic2G[['BTS_NAME', 'SHM_TCHTRAFFIC', 'HM_TOT_2G_DATA_TRAFF_KB']]
 traffic2G["SITEID"] = traffic2G["BTS_NAME"].apply(siteid)
 traffic2G.rename(
@@ -115,7 +117,7 @@ traffic2G.rename(
 traffic2G = traffic2G.drop_duplicates()
 traffic2G = traffic2G.groupby(['2G_SITE', 'SITEID'])[['2G_VOICE_TRAFFIC', '2G_DATA_TRAFFIC']].agg('sum').reset_index()
 
-traffic3G = pd.read_excel('3G.xlsx', sheet_name='Sheet')
+traffic3G = pd.read_excel(cwd + '/3G.xlsx', sheet_name='Sheet')
 traffic3G = traffic3G[['NODEB_NAME', 'SH_CS_TRAFFIC_TOTAL', 'TOT_3G_TRAF_MB']]
 traffic3G["SITEID"] = traffic3G["NODEB_NAME"].apply(siteid)
 traffic3G.rename(
@@ -124,7 +126,7 @@ traffic3G.rename(
 traffic3G = traffic3G.drop_duplicates()
 traffic3G = traffic3G.groupby(['3G_SITE', 'SITEID'])[['3G_VOICE_TRAFFIC', '3G_DATA_TRAFFIC']].agg('sum').reset_index()
 
-traffic4G = pd.read_excel('LTE.xlsx', sheet_name='Sheet')
+traffic4G = pd.read_excel(cwd + '/LTE.xlsx', sheet_name='Sheet')
 traffic4G = traffic4G[['ENODEB_NAME', 'VOLTE_TRAFFIC', 'DATA_TRAFFIC_VOL_MB']]
 traffic4G["SITEID"] = traffic4G["ENODEB_NAME"].apply(siteid)
 traffic4G.rename(
@@ -133,34 +135,34 @@ traffic4G.rename(
 traffic4G = traffic4G.drop_duplicates()
 traffic4G = traffic4G.groupby(['4G_SITE', 'SITEID'])[['4G_VOICE_TRAFFIC', '4G_DATA_TRAFFIC']].agg('sum').reset_index()
 
-util4g = pd.read_excel('Report 4G UtilPRB.xlsx', sheet_name='Sheet')
-util4g = util4g[['ENODEB_NAME', 'KPI160_3']]
+util4g = pd.read_excel(cwd + '/Report 4G UtilPRB.xlsx',usecols=['ENODEB_NAME', 'KPI160_3'], sheet_name='Sheet')
+#util4g = util4g[['ENODEB_NAME', 'KPI160_3']]
 util4g["SITEID"] = util4g["ENODEB_NAME"].apply(siteid)
 util4g = util4g.groupby(['SITEID'])[['KPI160_3']].agg('max').reset_index()
 print(util4g)
 
-roamer = pd.read_excel('SiteScore_Roamer.xlsx')
+roamer = pd.read_excel(cwd + '/SiteScore_Roamer.xlsx')
 roamer["SITEID"] = roamer["Sitename"].apply(siteid)
 roamer = roamer[["SITEID", "2G Voice.Counters.Imsi Cnt", "3G Voice.Counters.Imsi Cnt"]]
 roamer.fillna(0, inplace=True)
 roamer["TOTAL_ROAMER"] = roamer["2G Voice.Counters.Imsi Cnt"] + roamer["3G Voice.Counters.Imsi Cnt"]
 roamer = roamer.groupby(['SITEID'])[['TOTAL_ROAMER']].agg('sum').reset_index()
 
-hotspot = pd.read_excel("SITESCORE_MAIN.xlsx", sheet_name="HOTSPOT")
+hotspot = pd.read_excel(cwd + "/SITESCORE_MAIN.xlsx", sheet_name="HOTSPOT")
 hotspot = hotspot[["SITEID", "HOTSPOT_FLAG"]]
-reveneu = pd.read_excel("SITESCORE_MAIN.xlsx", sheet_name="REVENEU")
+reveneu = pd.read_excel(cwd + "/SITESCORE_MAIN.xlsx", sheet_name="REVENEU")
 reveneu = reveneu[["SITEID", "REVENEU"]]
-plan5g = pd.read_excel("SITESCORE_MAIN.xlsx", sheet_name="5G")
+plan5g = pd.read_excel(cwd + "/SITESCORE_MAIN.xlsx", sheet_name="5G")
 plan5g = plan5g[["SITEID", "5G_PLAN"]]
-otherop = pd.read_excel("SITESCORE_MAIN.xlsx", sheet_name="OTHER_OP")
+otherop = pd.read_excel(cwd + "/SITESCORE_MAIN.xlsx", sheet_name="OTHER_OP")
 otherop = otherop[["SITEID", "OTHER_OP"]]
-p3 = pd.read_excel("SITESCORE_MAIN.xlsx", sheet_name="P3")
+p3 = pd.read_excel(cwd + "/SITESCORE_MAIN.xlsx", sheet_name="P3")
 p3 = p3[["SITEID", "P3_Occurence"]]
-distance = pd.read_excel("SITESCORE_MAIN.xlsx",sheet_name="DISTANCE")
+distance = pd.read_excel(cwd + "/SITESCORE_MAIN.xlsx",sheet_name="DISTANCE")
 distance = distance[["SITEID","AVG_DISTANCE"]]
-puanlama = pd.read_excel("SITESCORE_MAIN.xlsx", sheet_name="PUANLAMA")
+puanlama = pd.read_excel(cwd + "/SITESCORE_MAIN.xlsx", sheet_name="PUANLAMA")
 puanlama.set_index("BASLIK",inplace=True)
-hotspotcategory = pd.read_excel("SITESCORE_MAIN.xlsx",sheet_name="HOTSPOT_KATEGORI")
+hotspotcategory = pd.read_excel(cwd + "/SITESCORE_MAIN.xlsx",sheet_name="HOTSPOT_KATEGORI")
 hotspotcategory.set_index("HOTSPOT_FLAG",inplace=True)
 
 uniq_site = (traffic2G["SITEID"].append(traffic3G["SITEID"]).append(traffic4G["SITEID"])).drop_duplicates()
