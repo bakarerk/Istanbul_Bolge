@@ -6,6 +6,8 @@ GSM = pd.read_csv("GSM_Engineering_CellDB.xls",sep="\t")
 
 LTE_rfopt = LTE[["EnodebName","SiteID","LOCALCELLID","TAC","CELLNAME","PHYCELLID","ROOTSEQUENCEIDX","DLEARFCN","REFERENCESIGNALPWR","AZIMUTH","ANTENNA","HEIGHT","M_TILT","E_TILT","Lat_Site","Lon_Site"]]
 UMTS_rfopt = UMTS[["NODEBNAME","Site_ID","CELLID","LAC","CELLNAME","PSCRAMBCODE","RNCNAME","RNCID","UARFCNDOWNLINK","AZIMUTH","ANTENNA","HEIGHT","M_TILT","E_TILT","Lat_Site","Lon_Site"]]
+GSM_rfopt = GSM[["SITE_NAME","Site_ID","CI","LAC","CELLNAME","BCCHNO","BSC","AZIMUTH","NCC","BCC","Lat_Site","Lon_Site" ]]
+
 
 LTE_rfopt.rename(columns={"EnodebName":"Site_Name","SiteID":"Site_ID","LOCALCELLID":"Cell_ID","TAC":"LAC","CELLNAME":"Cell_Name","PHYCELLID":"PCI_PSC_BCCH", \
                           "ROOTSEQUENCEIDX":"BSIC_Octet","DLEARFCN":"Freq","REFERENCESIGNALPWR":"Pcpich_Pwr","AZIMUTH":"Azimuth","ANTENNA":"Antenna_Type", \
@@ -14,6 +16,10 @@ LTE_rfopt.rename(columns={"EnodebName":"Site_Name","SiteID":"Site_ID","LOCALCELL
 UMTS_rfopt.rename(columns={"NODEBNAME":"Site_Name","SiteID":"Site_ID","CELLID":"Cell_ID","CELLNAME":"Cell_Name","PSCRAMBCODE":"PCI_PSC_BCCH", \
                           "RNCNAME":"RNC_BSC","RNCID":"RNC_ID","UARFCNDOWNLINK":"Freq","AZIMUTH":"Azimuth","ANTENNA":"Antenna_Type", \
                           "HEIGHT":"Antenna_Height","M_TILT":"Mtilt","E_TILT":"Etilt","Lat_Site":"Latitude","Lon_Site":"Longitude"},inplace="True")
+
+GSM_rfopt.rename(columns={"SITE_NAME":"Site_Name","CI":"Cell_ID", "CELLNAME":"Cell_Name", \
+                          "BCCHNO":"PCI_PSC_BCCH", "BSC":"RNC_BSC", "AZIMUTH":"Azimuth", "Lat_Site":"Latitude", "Lon_Site":"Longitude"}, inplace="True")
+
 
 LTE_rfopt["Site_ID"] = LTE_rfopt["Site_ID"].str[1:]
 LTE_rfopt["Mode"] = "4G"
@@ -40,13 +46,33 @@ UMTS_rfopt["BCC"] = ""
 UMTS_rfopt["Target_CI"] = ""
 UMTS_rfopt["LACCI"] = UMTS_rfopt["Cell_Name"].str[8]
 
+GSM_rfopt["Site_ID"] = GSM_rfopt["Site_ID"].str[1:0]
+GSM_rfopt["Mode"] = "3G"
+GSM_rfopt["RNC_ID"] = ""
+GSM_rfopt["Freq"] = ""
+GSM_rfopt["Max_Tx"] = ""
+GSM_rfopt["Pcpich_Pwr"] = ""
+GSM_rfopt["Antenna_Type"] = ""
+GSM_rfopt["Antenna_Height"] = ""
+GSM_rfopt["Mtilt"] = ""
+GSM_rfopt["Etilt"] = ""
+GSM_rfopt["Antenna_HBw"] = ""
+GSM_rfopt["Antenna_VBw"] = ""
+GSM_rfopt["LACCI"] = GSM_rfopt["Cell_Name"].str[8]
+GSM_rfopt["Target_CI"] = ""
+GSM_rfopt["BSIC_Octet"] = ""
+
 LTE_rfopt = LTE_rfopt[["Site_Name","Site_ID","Cell_ID","LAC","Cell_Name","PCI_PSC_BCCH","BSIC_Octet","RNC_BSC","RNC_ID","Freq","Max_Tx","Pcpich_Pwr","Azimuth","Antenna_Type","Antenna_Height","Mtilt","Etilt","Antenna_HBw","Antenna_VBw","NCC","BCC","Latitude","Longitude","Mode","LACCI","Target_CI"]]
 UMTS_rfopt = UMTS_rfopt[["Site_Name","Site_ID","Cell_ID","LAC","Cell_Name","PCI_PSC_BCCH","BSIC_Octet","RNC_BSC","RNC_ID","Freq","Max_Tx","Pcpich_Pwr","Azimuth","Antenna_Type","Antenna_Height","Mtilt","Etilt","Antenna_HBw","Antenna_VBw","NCC","BCC","Latitude","Longitude","Mode","LACCI","Target_CI"]]
+GSM_rfopt = GSM_rfopt[["Site_Name","Site_ID","Cell_ID","LAC","Cell_Name","PCI_PSC_BCCH","BSIC_Octet","RNC_BSC","RNC_ID","Freq","Max_Tx","Pcpich_Pwr","Azimuth","Antenna_Type","Antenna_Height","Mtilt","Etilt","Antenna_HBw","Antenna_VBw","NCC","BCC","Latitude","Longitude","Mode","LACCI","Target_CI"]]
+
 
 LTE_indoor = LTE_rfopt[LTE_rfopt.LACCI == "I"]
 LTE_outdoor = LTE_rfopt[LTE_rfopt.LACCI == "O"]
 UMTS_indoor = UMTS_rfopt[UMTS_rfopt.LACCI == "I"]
 UMTS_outdoor = UMTS_rfopt[UMTS_rfopt.LACCI == "O"]
+GSM_indoor = GSM_rfopt[GSM_rfopt.LACCI == "I"]
+GSM_outdoor = GSM_rfopt[GSM_rfopt.LACCI == "O"]
 
 L800_indoor = LTE_indoor[LTE_indoor.Freq == 6300]
 L900_indoor = LTE_indoor[LTE_indoor.Freq == 3725]
@@ -85,6 +111,8 @@ UMTS_F2_indoor.to_csv("UMTS_F2_indoor.txt",sep="\t",index=False)
 UMTS_F2_outdoor.to_csv("UMTS_F2_outdoor.txt",sep="\t",index=False)
 UMTS_F3_indoor.to_csv("UMTS_F3_indoor.txt",sep="\t",index=False)
 UMTS_F3_outdoor.to_csv("UMTS_F3_outdoor.txt",sep="\t",index=False)
+GSM_indoor.to_csv("GSM_indoor.txt" ,sep="\t", index=False )
+GSM_outdoor.to_csv("GSM_outdoor.txt" ,sep="\t", index=False)
+
 
 #'"EnodebName","SiteID","LOCALCELLID","TAC","CELLNAME","PHYCELLID","ROOTSEQUENCEIDX","","","DLEARFCN","","REFERENCESIGNALPWR","AZIMUTH","ANTENNA","HEIGHT","M_TILT","E_TILT","","","","","Lat_Site","Lon_Site","4G","""
-
