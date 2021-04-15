@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
-from pandas import ExcelWriter
-from pandas import ExcelFile
 from functools import reduce
 import os
+#import time
 cwd = os.getcwd()
+#t = time.process_time()
 
 def siteid(site):
     if site[0] == "B":
@@ -85,6 +85,9 @@ dude_final = reduce(lambda left, right: pd.merge(left, right, on='COMMON ID'), d
 dude_final["SITEID"] = dude_final["COMMON ID"].apply(siteidTamamla)
 dude_final.to_excel("dude_final.xlsx")
 
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(1,elapsed_time))
+
 lteDB = pd.read_csv(cwd + '/LTE_Engineering_CellDB.xls', sep="\t", low_memory=False)
 lteDB["SITEID"] = lteDB["EnodebName"].apply(siteid)
 lteIndoor = lteDB.loc[lteDB["CellType"] == "INDOOR"]
@@ -95,11 +98,17 @@ lteDB = lteDB[["SITEID", "SiteEARFCNs", "City", "DISTRICT"]]
 lteDB.dropna(subset=["City", "DISTRICT"], inplace=True)
 lteDB = lteDB.drop_duplicates()
 
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(2,elapsed_time))
+
 umtsDB = pd.read_csv(cwd + '/UMTS_Engineering_CellDB.xls', sep="\t", low_memory=False)
 umtsDB["SITEID"] = umtsDB["NODEBNAME"].apply(siteid)
 umtsDB = umtsDB[["SITEID", "City", "DISTRICT"]]
 umtsDB.dropna(subset=["City", "DISTRICT"], inplace=True)
 umtsDB = umtsDB.drop_duplicates()
+
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(3,elapsed_time))
 
 gsmDB = pd.read_csv(cwd + '\GSM_Engineering_CellDB.xls', sep="\t", low_memory=False)
 gsmDB.dropna(subset=["SITE_NAME"], inplace=True)
@@ -107,6 +116,9 @@ gsmDB["SITEID"] = gsmDB["SITE_NAME"].apply(siteid)
 gsmDB = gsmDB[["SITEID", "CITY", "DISTRICT"]]
 gsmDB.dropna(subset=["CITY", "DISTRICT"], inplace=True)
 gsmDB = gsmDB.drop_duplicates()
+
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(4,elapsed_time))
 
 traffic2G = pd.read_excel(cwd + '/2G.xlsx', sheet_name='Sheet')
 traffic2G = traffic2G[['BTS_NAME', 'SHM_TCHTRAFFIC', 'HM_TOT_2G_DATA_TRAFF_KB']]
@@ -117,6 +129,9 @@ traffic2G.rename(
 traffic2G = traffic2G.drop_duplicates()
 traffic2G = traffic2G.groupby(['2G_SITE', 'SITEID'])[['2G_VOICE_TRAFFIC', '2G_DATA_TRAFFIC']].agg('sum').reset_index()
 
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(5,elapsed_time))
+
 traffic3G = pd.read_excel(cwd + '/3G.xlsx', sheet_name='Sheet')
 traffic3G = traffic3G[['NODEB_NAME', 'SH_CS_TRAFFIC_TOTAL', 'TOT_3G_TRAF_MB']]
 traffic3G["SITEID"] = traffic3G["NODEB_NAME"].apply(siteid)
@@ -125,6 +140,9 @@ traffic3G.rename(
     inplace=True)
 traffic3G = traffic3G.drop_duplicates()
 traffic3G = traffic3G.groupby(['3G_SITE', 'SITEID'])[['3G_VOICE_TRAFFIC', '3G_DATA_TRAFFIC']].agg('sum').reset_index()
+
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(6,elapsed_time))
 
 traffic4G = pd.read_excel(cwd + '/LTE.xlsx', sheet_name='Sheet')
 traffic4G = traffic4G[['ENODEB_NAME', 'VOLTE_TRAFFIC', 'DATA_TRAFFIC_VOL_MB']]
@@ -135,11 +153,17 @@ traffic4G.rename(
 traffic4G = traffic4G.drop_duplicates()
 traffic4G = traffic4G.groupby(['4G_SITE', 'SITEID'])[['4G_VOICE_TRAFFIC', '4G_DATA_TRAFFIC']].agg('sum').reset_index()
 
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(7,elapsed_time))
+
 util4g = pd.read_excel(cwd + '/Report 4G UtilPRB.xlsx',usecols=['ENODEB_NAME', 'KPI160_3'], sheet_name='Sheet')
 #util4g = util4g[['ENODEB_NAME', 'KPI160_3']]
 util4g["SITEID"] = util4g["ENODEB_NAME"].apply(siteid)
 util4g = util4g.groupby(['SITEID'])[['KPI160_3']].agg('max').reset_index()
-print(util4g)
+#print(util4g)
+
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(8,elapsed_time))
 
 roamer = pd.read_excel(cwd + '/SiteScore_Roamer.xlsx')
 roamer["SITEID"] = roamer["Sitename"].apply(siteid)
@@ -147,6 +171,9 @@ roamer = roamer[["SITEID", "2G Voice.Counters.Imsi Cnt", "3G Voice.Counters.Imsi
 roamer.fillna(0, inplace=True)
 roamer["TOTAL_ROAMER"] = roamer["2G Voice.Counters.Imsi Cnt"] + roamer["3G Voice.Counters.Imsi Cnt"]
 roamer = roamer.groupby(['SITEID'])[['TOTAL_ROAMER']].agg('sum').reset_index()
+
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(9,elapsed_time))
 
 hotspot = pd.read_excel(cwd + "/SITESCORE_MAIN.xlsx", sheet_name="HOTSPOT")
 hotspot = hotspot[["SITEID", "HOTSPOT_FLAG"]]
@@ -165,6 +192,9 @@ puanlama.set_index("BASLIK",inplace=True)
 hotspotcategory = pd.read_excel(cwd + "/SITESCORE_MAIN.xlsx",sheet_name="HOTSPOT_KATEGORI")
 hotspotcategory.set_index("HOTSPOT_FLAG",inplace=True)
 
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(10,elapsed_time))
+
 uniq_site = (traffic2G["SITEID"].append(traffic3G["SITEID"]).append(traffic4G["SITEID"])).drop_duplicates()
 
 sitescorelist = [uniq_site, traffic2G, traffic3G, traffic4G, roamer, lteDB, umtsDB, gsmDB, hotspot, lteIndoor, reveneu,
@@ -175,6 +205,9 @@ site_score_final.fillna(0, inplace=True)
 sitescorelist2 = [site_score_final, hotspotcategory]
 site_score_final = reduce(lambda left, right: pd.merge(left, right, on='HOTSPOT_FLAG', how='left'), sitescorelist2)
 site_score_final.fillna(0, inplace=True)
+
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(11,elapsed_time))
 
 #data işleme kısmı
 site_score_final["TOTAL_VOICE"] = site_score_final["2G_VOICE_TRAFFIC"] + site_score_final["3G_VOICE_TRAFFIC"] + \
@@ -194,6 +227,9 @@ p80_dude = site_score_final.quantile(0.8)#,"TOTAL_DATA","LTE_DUDE","ALL_DUDE"]
 p90_dude = site_score_final.quantile(0.9)#,"TOTAL_DATA","LTE_DUDE","ALL_DUDE"]
 p100_dude = site_score_final.quantile(1)
 
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(12,elapsed_time))
+
 for column in ["TOTAL_VOICE","TOTAL_DATA","LTE_DUDE","ALL_DUDE","REVENEU","TOTAL_ROAMER"]:
     criteria = [site_score_final[column].between(0, p40_dude[column]), site_score_final[column].between(p40_dude[column], p50_dude[column]), site_score_final[column].between(p50_dude[column], p60_dude[column]), site_score_final[column].between(p60_dude[column], p70_dude[column]), site_score_final[column].between(p70_dude[column], p80_dude[column]), site_score_final[column].between(p80_dude[column], p90_dude[column]), site_score_final[column].between(p90_dude[column], p100_dude[column])]
     values = [3,4,5,6,7,8,9]
@@ -201,11 +237,14 @@ for column in ["TOTAL_VOICE","TOTAL_DATA","LTE_DUDE","ALL_DUDE","REVENEU","TOTAL
     site_score_final[newcolumn] = np.select(criteria, values, 0)
 site_score_final.fillna(0, inplace=True)
 
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(13,elapsed_time))
+
 site_score_final["FINAL_CS"] = puanlama.at["FINAL_CS","PUAN"] * site_score_final["TOTAL_VOICE_P"]
 site_score_final["FINAL_PS"] = puanlama.at["FINAL_PS","PUAN"] * site_score_final["TOTAL_DATA_P"]
 site_score_final["FINAL_UTIL"] =  site_score_final["KPI160_3"].apply(util)
 site_score_final["FINAL_HOTSPOT"] = puanlama.at["FINAL_HOTSPOT","PUAN"] * site_score_final[["HOTSPOT_PUAN","FINAL_UTIL"]].max(axis=1)
-site_score_final["FINAL_CA"] = site_score_final["SiteEARFCNs"].apply(cacount)
+site_score_final["FINAL_CA"] = puanlama.at["FINAL_CA","PUAN"] * site_score_final["SiteEARFCNs"].apply(cacount)
 site_score_final["FINAL_TERMINAL"] = puanlama.at["FINAL_TERMINAL","PUAN"] * site_score_final["LTE_DUDE_P"]
 site_score_final["FINAL_SITEDISTANCE"] = puanlama.at["FINAL_SITEDISTANCE","PUAN"]*site_score_final["AVG_DISTANCE"].apply(sitedistance)
 site_score_final["FINAL_ROAMER"] = puanlama.at["FINAL_ROAMER","PUAN"] * site_score_final["TOTAL_ROAMER_P"]
@@ -215,6 +254,9 @@ site_score_final["FINAL_5G"] = puanlama.at["FINAL_5G","PUAN"] * site_score_final
 site_score_final["FINAL_P3"] = puanlama.at["FINAL_P3","PUAN"] * site_score_final["P3_Occurence"]
 site_score_final["FINAL_OTHEROPERATOR"] = puanlama.at["FINAL_OTHEROPERATOR","PUAN"] * site_score_final["OTHER_OP"].apply(fotherop)
 site_score_final["SITE_SCORE"] = site_score_final["FINAL_CS"] + site_score_final["FINAL_PS"] + site_score_final["FINAL_HOTSPOT"] + site_score_final["FINAL_CA"] + site_score_final["FINAL_TERMINAL"] + site_score_final["FINAL_SITEDISTANCE"] + site_score_final["FINAL_ROAMER"] + site_score_final["FINAL_INDOOR"] + site_score_final["FINAL_REVENEU"] + site_score_final["FINAL_5G"] + site_score_final["FINAL_P3"] + site_score_final["FINAL_OTHEROPERATOR"]
+
+#elapsed_time = time.process_time() - t
+#print("{}:{}".format(14,elapsed_time))
 
 site_score_ozet = site_score_final[["SITEID","City_x","DISTRICT_x","City_y","DISTRICT_y","CITY","DISTRICT","2G_SITE","3G_SITE","4G_SITE","TOTAL_VOICE","TOTAL_DATA","HOTSPOT_FLAG","SiteEARFCNs","LTE_DUDE","AVG_DISTANCE","TOTAL_ROAMER","CellType","REVENEU","5G_PLAN","P3_Occurence","OTHER_OP","FINAL_CS","FINAL_PS","FINAL_HOTSPOT","FINAL_CA","FINAL_TERMINAL","FINAL_SITEDISTANCE","FINAL_ROAMER","FINAL_INDOOR","FINAL_REVENEU","FINAL_5G","FINAL_P3","FINAL_OTHEROPERATOR","SITE_SCORE"]]
 
