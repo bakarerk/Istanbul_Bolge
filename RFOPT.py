@@ -46,7 +46,7 @@ UMTS_rfopt["BCC"] = ""
 UMTS_rfopt["Target_CI"] = ""
 UMTS_rfopt["LACCI"] = UMTS_rfopt["Cell_Name"].str[8]
 
-GSM_rfopt["Site_ID"] = GSM_rfopt["Site_ID"].str[1:0]
+GSM_rfopt["Site_ID"] = GSM_rfopt["Site_ID"].str[1:]
 GSM_rfopt["Mode"] = "3G"
 GSM_rfopt["RNC_ID"] = ""
 GSM_rfopt["Freq"] = ""
