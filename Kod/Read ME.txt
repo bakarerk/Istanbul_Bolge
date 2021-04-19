@@ -1,0 +1,7 @@
+Kodda değişiklik yaptıktan sonra exe dosyasını tekrar oluşturmak
+için terminalde aşağıdaki komutu giriyoruz. Program ikonu için
+Icon path yazan yere ico uzantılı resim koyabiliriz. Python otomatik olarak
+diğer py uzantılı dosyaları main içerisinden çağırıyor. O yüzden sadece 
+main.py'ı yazıyoruz spec dosyası ile birlikte.
+
+pyinstaller --onefile --noconsole -i 'Icon path' main.spec main.py
