@@ -79,11 +79,12 @@ def descript(cell_name,site,antenna,azimuth,mtilt,height,lactac,bcch,bsc):
 
 lat = 41.091893
 lon = 26.548341
+azimuth = 100
 beam = 20
 radius = 0.4
 
-d1 = getEndpoint(lat,lon,beam/2,radius)
-d2 = getEndpoint(lat,lon,-beam/2,radius)
+d1 = getEndpoint(lat,lon,azimuth + beam/2,radius)
+d2 = getEndpoint(lat,lon,azimuth - beam/2,radius)
 cell_name = "LTECELLA"
 site ="SITEA"
 antenna = "HUAWEIX123"
@@ -99,5 +100,4 @@ pol = kml.newpolygon(name=site)
 pol.outerboundaryis = [(lon,lat), (d1[1],d1[0]),(d2[1],d2[0]),(lon,lat)]
 pol.style.polystyle.color = '850095e5'
 pol.description = descript(cell_name,site,antenna,azimuth,mtilt,height,lac,bcch,bsc)
-
 kml.save("Polygon Styling.kml")
