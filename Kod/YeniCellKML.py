@@ -4,7 +4,7 @@ import simplekml
 
 def getEndpoint(lat1, lon1, bearing, d):
     geod = Geodesic(Constants.WGS84_a, Constants.WGS84_f)
-    d = geod.Direct(lat1, lon1, bearing, d * 1852.0)
+    d = geod.Direct(lat1, lon1, bearing, d * 200.0)
     return d['lat2'], d['lon2']
 
 def descript(cell_name,site,antenna,azimuth,mtilt,height,lactac,bcch,bsc):
