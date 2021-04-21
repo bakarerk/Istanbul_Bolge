@@ -76,36 +76,51 @@ def descript(cell_name,site,antenna,azimuth,height,lactac,bcch,bsc):
 
 path  = '/LibraryFiles/'
 filename_1 = 'GSM_Engineering_CellDB.xls'
-#filename_2 = 'UMTS_Engineering_CellDB.xls'
-#filename_3 = 'LTE_Engineering_CellDB.xls'
+filename_2 = 'UMTS_Engineering_CellDB.xls'
+filename_3 = 'LTE_Engineering_CellDB.xls'
 ftp = ftplib.FTP("gmp2kaydemir")
 ftp.login("opti", "optik")
 ftp.cwd(path)
-ftp.retrbinary("RETR " + filename_1 ,open(filename_1, 'wb').write)
+#ftp.retrbinary("RETR " + filename_1 ,open(filename_1, 'wb').write)
 #ftp.retrbinary("RETR " + filename_2 ,open(filename_2, 'wb').write)
 #ftp.retrbinary("RETR " + filename_3 ,open(filename_3, 'wb').write)
 ftp.quit()
 
-#LTE = pd.read_csv("LTE_Engineering_CellDB.xls",sep="\t")
-#UMTS = pd.read_csv("UMTS_Engineering_CellDB.xls",sep="\t")
+LTE = pd.read_csv("LTE_Engineering_CellDB.xls",sep="\t",low_memory=False,index_col="CELLNAME")
+UMTS = pd.read_csv("UMTS_Engineering_CellDB.xls",sep="\t",low_memory=False,index_col="CELLNAME")
 GSM = pd.read_csv("GSM_Engineering_CellDB.xls",sep="\t",low_memory=False,index_col="CELLNAME")
+
 GSMDict = GSM.to_dict()
-#CELLNAME	CITY	DISTRICT	REGION	SITE_NAME	Site_ID	LAC	CI	BCCHNO	NCC	BCC	BSC	Lat_Site	Lon_Site	AZIMUTH	M_TILT	E_TILT	HEIGHT	TRX_NUM
+UMTSDict = UMTS.to_dict()
+LTEDict = LTE.to_dict()
 
-#cellname[9:11]
+cellnameListGSM = list(GSM.index)
+cellnameListUMTS = list(UMTS.index)
+cellnameListLTE = list(LTE.index)
 
-#cellnameList = ["G0112220O3411222","G0112210O3411221","G0112230O3411223"]
-cellnameList = list(GSM.index)
+techSytle = {"GSM":{"beam":40,"inner":0,"outer":0.01,"color":"9864b736"}, \
+             "UMTS":{"beam":40,"inner":0,"outer":0.01,"color":"851f03a4"}, \
+             "6300":{"beam":40,"inner":0.011,"outer":0.02,"color":"85381e33"}, \
+             "3725":{"beam":40,"inner":0.021,"outer":0.03,"color":"85ff00aa"}, \
+             "1899":{"beam":40,"inner":0.031,"outer":0.04,"color":"85ff5500"}, \
+             "301":{"beam":40,"inner":0.041,"outer":0.05,"color":"850095e5"}, \
+             "3075":{"beam":40,"inner":0.051,"outer":0.06,"color":"85f69b45"}, \
+             "37950":{"beam":40,"inner":0.061,"outer":0.07,"color":"85f69b45"}}
+
 kml = simplekml.Kml()
-for cellname in cellnameList:
+
+####GSM KISMI
+# CELLNAME	CITY	DISTRICT	REGION	SITE_NAME	Site_ID	LAC	CI	BCCHNO	NCC	BCC	BSC
+# Lat_Site	Lon_Site	AZIMUTH	M_TILT	E_TILT	HEIGHT	TRX_NUM
+for cellname in cellnameListGSM:
     city = GSMDict["CITY"][cellname]
     if city == "ISTANBUL" or city == "EDIRNE" or city == "KIRKLARELI" or city == "TEKIRDAG":
         lat = GSMDict["Lat_Site"][cellname]
         lon = GSMDict["Lon_Site"][cellname]
         azimuth = GSMDict["AZIMUTH"][cellname]
-        beam = 20
-        radius = 0.15
-        d1 = getEndpoint(lat,lon,azimuth + beam/2,radius)
+        beam = techSytle["GSM"]["beam"]
+        radius = techSytle["GSM"]["outer"]
+        d1 = getEndpoint(lat,lon,azimuth,radius)
         d2 = getEndpoint(lat,lon,azimuth - beam/2,radius)
         site = GSMDict["SITE_NAME"][cellname]
         antenna = ""
@@ -116,7 +131,67 @@ for cellname in cellnameList:
 
         pol = kml.newpolygon(name=site)
         pol.outerboundaryis = [(lon,lat), (d1[1],d1[0]),(d2[1],d2[0]),(lon,lat)]
-        pol.style.polystyle.color = '850095e5'
+        pol.style.polystyle.color = techSytle["GSM"]["color"]
+        pol.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+
+####UMTS KISMI
+#CELLNAME	SectorWithNodeBName	DC_Freqs	DC_Stat	DC_Cells	Sector	Site_ID	REGION	City	DISTRICT	NODEBNAME	NODEBID	CELLID
+#LOCELL	BANDIND	UARFCNDOWNLINK	DL_Freq	UARFCNUPLINK	LAC	SAC	RAC	PSCRAMBCODE	TCELL	CIO	SPGID	ACTSTATUS	BLKSTATUS
+# Lat_Site	Lon_Site	RNCNAME	AZIMUTH	M_TILT	E_TILT	HEIGHT	ANTENNA	CELLTYPE	RNCID	Strategy1	Comment
+for cellname in cellnameListUMTS:
+    city = UMTSDict["City"][cellname]
+    if city == "ISTANBUL" or city == "EDIRNE" or city == "KIRKLARELI" or city == "TEKIRDAG":
+        lat = UMTSDict["Lat_Site"][cellname]
+        lon = UMTSDict["Lon_Site"][cellname]
+        azimuth = UMTSDict["AZIMUTH"][cellname]
+        beam = techSytle["UMTS"]["beam"]
+        radius = techSytle["UMTS"]["outer"]
+        d1 = getEndpoint(lat,lon,azimuth + beam/2,radius)
+        d2 = getEndpoint(lat,lon,azimuth,radius)
+        site = UMTSDict["NODEBNAME"][cellname]
+        antenna = UMTSDict["ANTENNA"][cellname]
+        height = UMTSDict["HEIGHT"][cellname]
+        lac = UMTSDict["LAC"][cellname]
+        bcch = UMTSDict["PSCRAMBCODE"][cellname]
+        bsc = UMTSDict["RNCNAME"][cellname]
+
+        pol = kml.newpolygon(name=site)
+        pol.outerboundaryis = [(lon,lat), (d1[1],d1[0]),(d2[1],d2[0]),(lon,lat)]
+        pol.style.polystyle.color = techSytle["UMTS"]["color"]
+        pol.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+
+#LTE kosmı
+#CELLNAME	EnodebName_CID	Sector	SiteID	CA_Stat	CA_Freqs	CITYCODE	MAIN_REGION	SUB_REGION
+# City	DISTRICT	eNodebID	eNodebID_CellID	BandType	EnodebName	ENODEBFUNCTIONNAME	TAC	TAC_ATOLL
+# LOCALCELLID	CELLID	TXRXMODE	FREQBAND	DLEARFCN	DL_Freq	SiteEARFCNs	DLBANDWIDTH	ULBANDWIDTH	PHYCELLID
+# ROOTSEQUENCEIDX	PREAMBLEFMT	CELLRADIUS	CELLADMINSTATE	CELLACTIVESTATE	REFERENCESIGNALPWR	PAPCOFF	PB
+# Lat_Site	Lon_Site	AZIMUTH	M_TILT	E_TILT	HEIGHT	ANTENNA	ANTENNA_BW	CellType	FreqType
+# X1	X2	X3	X4	X5	X6	X7	X8	X9	X10	Vendor	NodeType	OSSIP
+
+for cellname in cellnameListLTE:
+    city = LTEDict["City"][cellname]
+    if city == "EDIRNE":# or city == "ISTANBUL" or city == "KIRKLARELI" or city == "TEKIRDAG":
+        band = str(LTEDict["DLEARFCN"][cellname])
+        lat = LTEDict["Lat_Site"][cellname]
+        lon = LTEDict["Lon_Site"][cellname]
+        azimuth = LTEDict["AZIMUTH"][cellname]
+        beam = techSytle[band]["beam"]
+        outer = techSytle[band]["outer"]
+        inner = techSytle[band]["inner"]
+        d1 = getEndpoint(lat,lon,azimuth + beam/2,outer)
+        d2 = getEndpoint(lat,lon,azimuth - beam/2,outer)
+        d0 = getEndpoint(lat,lon,azimuth + beam/2,inner)
+        d4 = getEndpoint(lat,lon,azimuth - beam/2,inner)
+        site = LTEDict["EnodebName"][cellname]
+        antenna = LTEDict["ANTENNA"][cellname]
+        height = LTEDict["HEIGHT"][cellname]
+        lac = LTEDict["TAC"][cellname]
+        bcch = LTEDict["PHYCELLID"][cellname]
+        bsc = ""
+
+        pol = kml.newpolygon(name=site)
+        pol.outerboundaryis = [(d0[1],d0[0]), (d1[1],d1[0]),(d2[1],d2[0]),(d4[1],d4[0])]
+        pol.style.polystyle.color = techSytle[band]["color"]
         pol.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 kml.savekmz("Polygon Styling.kmz")
