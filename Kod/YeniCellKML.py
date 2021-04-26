@@ -74,6 +74,7 @@ def descript(cell_name,site,antenna,azimuth,height,lactac,bcch,bsc):
 
 '''
 
+'''
 path  = '/LibraryFiles/'
 filename_1 = 'GSM_Engineering_CellDB.xls'
 filename_2 = 'UMTS_Engineering_CellDB.xls'
@@ -81,10 +82,11 @@ filename_3 = 'LTE_Engineering_CellDB.xls'
 ftp = ftplib.FTP("gmp2kaydemir")
 ftp.login("opti", "optik")
 ftp.cwd(path)
-#ftp.retrbinary("RETR " + filename_1 ,open(filename_1, 'wb').write)
-#ftp.retrbinary("RETR " + filename_2 ,open(filename_2, 'wb').write)
-#ftp.retrbinary("RETR " + filename_3 ,open(filename_3, 'wb').write)
+ftp.retrbinary("RETR " + filename_1 ,open(filename_1, 'wb').write)
+ftp.retrbinary("RETR " + filename_2 ,open(filename_2, 'wb').write)
+ftp.retrbinary("RETR " + filename_3 ,open(filename_3, 'wb').write)
 ftp.quit()
+'''
 
 LTE = pd.read_csv("LTE_Engineering_CellDB.xls",sep="\t",low_memory=False,index_col="CELLNAME")
 UMTS = pd.read_csv("UMTS_Engineering_CellDB.xls",sep="\t",low_memory=False,index_col="CELLNAME")
@@ -108,6 +110,10 @@ techSytle = {"GSM":{"beam":40,"inner":0,"outer":0.01,"color":"9864b736"}, \
              "37950":{"beam":40,"inner":0.061,"outer":0.07,"color":"85f69b45"}}
 
 kml = simplekml.Kml()
+site_folder = kml.newdocument(name='Site')
+gsm_folder = kml.newdocument(name='GSM')
+umts_folder = kml.newdocument(name='UMTS')
+lte_folder = kml.newdocument(name='LTE')
 
 ####GSM KISMI
 # CELLNAME	CITY	DISTRICT	REGION	SITE_NAME	Site_ID	LAC	CI	BCCHNO	NCC	BCC	BSC
@@ -129,10 +135,12 @@ for cellname in cellnameListGSM:
         bcch = GSMDict["BCCHNO"][cellname]
         bsc = GSMDict["BSC"][cellname]
 
-        pol = kml.newpolygon(name=site)
-        pol.outerboundaryis = [(lon,lat), (d1[1],d1[0]),(d2[1],d2[0]),(lon,lat)]
-        pol.style.polystyle.color = techSytle["GSM"]["color"]
-        pol.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+        gsm_folder = kml.newpolygon(name=site)
+        gsm_folder.outerboundaryis = [(lon,lat), (d1[1],d1[0]),(d2[1],d2[0]),(lon,lat)]
+        gsm_folder.style.polystyle.color = techSytle["GSM"]["color"]
+        gsm_folder.style.linestyle.color = techSytle["GSM"]["color"]
+        gsm_folder.style.linestyle.width = 4 * 0.7
+        gsm_folder.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 ####UMTS KISMI
 #CELLNAME	SectorWithNodeBName	DC_Freqs	DC_Stat	DC_Cells	Sector	Site_ID	REGION	City	DISTRICT	NODEBNAME	NODEBID	CELLID
@@ -158,6 +166,8 @@ for cellname in cellnameListUMTS:
         pol = kml.newpolygon(name=site)
         pol.outerboundaryis = [(lon,lat), (d1[1],d1[0]),(d2[1],d2[0]),(lon,lat)]
         pol.style.polystyle.color = techSytle["UMTS"]["color"]
+        pol.style.linestyle.color = techSytle["UMTS"]["color"]
+        #pol.style.linestyle.width = 4 * 0.7
         pol.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 #LTE kosmı
@@ -170,7 +180,7 @@ for cellname in cellnameListUMTS:
 
 for cellname in cellnameListLTE:
     city = LTEDict["City"][cellname]
-    if city == "EDIRNE":# or city == "ISTANBUL" or city == "KIRKLARELI" or city == "TEKIRDAG":
+    if city == "EDIRNE" or city == "ISTANBUL" or city == "KIRKLARELI" or city == "TEKIRDAG":
         band = str(LTEDict["DLEARFCN"][cellname])
         lat = LTEDict["Lat_Site"][cellname]
         lon = LTEDict["Lon_Site"][cellname]
@@ -192,9 +202,11 @@ for cellname in cellnameListLTE:
         pol = kml.newpolygon(name=site)
         pol.outerboundaryis = [(d0[1],d0[0]), (d1[1],d1[0]),(d2[1],d2[0]),(d4[1],d4[0])]
         pol.style.polystyle.color = techSytle[band]["color"]
+        pol.style.linestyle.color = techSytle[band]["color"]
+        #pol.style.linestyle.width = 4 * 0.7
         pol.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
-kml.savekmz("Polygon Styling.kmz")
+kml.savekmz("Polygon Styling.kmz",False)
 
 #print(newDictGSM["SITE_NAME"]["GM277020O6129802"])
 #for i in newDictGSM.keys():
