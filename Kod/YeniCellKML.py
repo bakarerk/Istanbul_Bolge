@@ -111,7 +111,7 @@ techSytle = {"GSM":{"beam":40,"inner":0,"outer":0.01,"color":"9864b736"}, \
 
 kml = simplekml.Kml()
 site_folder = kml.newdocument(name='Site')
-gsm_folder = kml.newdocument(name='GSM')
+gsm_folder = kml.newfolder(name='GSM')
 umts_folder = kml.newdocument(name='UMTS')
 lte_folder = kml.newdocument(name='LTE')
 
@@ -135,13 +135,16 @@ for cellname in cellnameListGSM:
         bcch = GSMDict["BCCHNO"][cellname]
         bsc = GSMDict["BSC"][cellname]
 
-        gsm_folder = kml.newpolygon(name=site)
-        gsm_folder.outerboundaryis = [(lon,lat), (d1[1],d1[0]),(d2[1],d2[0]),(lon,lat)]
-        gsm_folder.style.polystyle.color = techSytle["GSM"]["color"]
-        gsm_folder.style.linestyle.color = techSytle["GSM"]["color"]
-        gsm_folder.style.linestyle.width = 4 * 0.7
-        gsm_folder.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
+        gsm_cell = gsm_folder.newpolygon(name=site)
+        gsm_cell.outerboundaryis = [(lon,lat,10), (d1[1],d1[0],10),(d2[1],d2[0],10),(lon,lat,10)]
+        gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
+        gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
+        gsm_cell.style.linestyle.width = 2.8
+        gsm_cell.extrude = 1
+        gsm_cell.altitudemode = simplekml.AltitudeMode.relativetoground
+        gsm_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+'''
 ####UMTS KISMI
 #CELLNAME	SectorWithNodeBName	DC_Freqs	DC_Stat	DC_Cells	Sector	Site_ID	REGION	City	DISTRICT	NODEBNAME	NODEBID	CELLID
 #LOCELL	BANDIND	UARFCNDOWNLINK	DL_Freq	UARFCNUPLINK	LAC	SAC	RAC	PSCRAMBCODE	TCELL	CIO	SPGID	ACTSTATUS	BLKSTATUS
@@ -205,7 +208,7 @@ for cellname in cellnameListLTE:
         pol.style.linestyle.color = techSytle[band]["color"]
         #pol.style.linestyle.width = 4 * 0.7
         pol.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
-
+'''
 kml.savekmz("Polygon Styling.kmz",False)
 
 #print(newDictGSM["SITE_NAME"]["GM277020O6129802"])
