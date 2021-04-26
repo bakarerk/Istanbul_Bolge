@@ -204,13 +204,15 @@ for cellname in cellnameListLTE:
         bcch = LTEDict["PHYCELLID"][cellname]
         bsc = ""
 
-        pol = kml.newpolygon(name=site)
-        pol.outerboundaryis = [(d0[1],d0[0]), (d1[1],d1[0]),(d2[1],d2[0]),(d4[1],d4[0])]
-        pol.style.polystyle.color = techSytle[band]["color"]
-        pol.style.linestyle.color = techSytle[band]["color"]
-        #pol.style.linestyle.width = 4 * 0.7
-        pol.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
-'''
+        lte_cell = lte_folder.newpolygon(name=site)
+        lte_cell.outerboundaryis = [(d0[1],d0[0],10), (d1[1],d1[0],10),(d2[1],d2[0],10),(d4[1],d4[0],10)]
+        lte_cell.style.polystyle.color = techSytle[band]["color"]
+        lte_cell.style.linestyle.color = techSytle[band]["color"]
+        lte_cell.style.linestyle.width = 2.8
+        lte_cell.extrude = 1
+        lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
+        lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+
 kml.savekmz("Polygon Styling.kmz",False)
 
 #print(newDictGSM["SITE_NAME"]["GM277020O6129802"])
