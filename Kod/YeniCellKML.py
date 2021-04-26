@@ -110,10 +110,10 @@ techSytle = {"GSM":{"beam":40,"inner":0,"outer":0.01,"color":"9864b736"}, \
              "37950":{"beam":40,"inner":0.061,"outer":0.07,"color":"85f69b45"}}
 
 kml = simplekml.Kml()
-site_folder = kml.newdocument(name='Site')
+site_folder = kml.newfolder(name='Site')
 gsm_folder = kml.newfolder(name='GSM')
-umts_folder = kml.newdocument(name='UMTS')
-lte_folder = kml.newdocument(name='LTE')
+umts_folder = kml.newfolder(name='UMTS')
+lte_folder = kml.newfolder(name='LTE')
 
 ####GSM KISMI
 # CELLNAME	CITY	DISTRICT	REGION	SITE_NAME	Site_ID	LAC	CI	BCCHNO	NCC	BCC	BSC
@@ -144,7 +144,7 @@ for cellname in cellnameListGSM:
         gsm_cell.extrude = 1
         gsm_cell.altitudemode = simplekml.AltitudeMode.relativetoground
         gsm_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
-'''
+
 ####UMTS KISMI
 #CELLNAME	SectorWithNodeBName	DC_Freqs	DC_Stat	DC_Cells	Sector	Site_ID	REGION	City	DISTRICT	NODEBNAME	NODEBID	CELLID
 #LOCELL	BANDIND	UARFCNDOWNLINK	DL_Freq	UARFCNUPLINK	LAC	SAC	RAC	PSCRAMBCODE	TCELL	CIO	SPGID	ACTSTATUS	BLKSTATUS
@@ -166,12 +166,14 @@ for cellname in cellnameListUMTS:
         bcch = UMTSDict["PSCRAMBCODE"][cellname]
         bsc = UMTSDict["RNCNAME"][cellname]
 
-        pol = kml.newpolygon(name=site)
-        pol.outerboundaryis = [(lon,lat), (d1[1],d1[0]),(d2[1],d2[0]),(lon,lat)]
-        pol.style.polystyle.color = techSytle["UMTS"]["color"]
-        pol.style.linestyle.color = techSytle["UMTS"]["color"]
-        #pol.style.linestyle.width = 4 * 0.7
-        pol.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+        umts_cell = umts_folder.newpolygon(name=site)
+        umts_cell.outerboundaryis = [(lon,lat,10), (d1[1],d1[0],10),(d2[1],d2[0],10),(lon,lat,10)]
+        umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
+        umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
+        umts_cell.style.linestyle.width = 2.8
+        umts_cell.extrude = 1
+        umts_cell.altitudemode = simplekml.AltitudeMode.relativetoground
+        umts_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 #LTE kosmı
 #CELLNAME	EnodebName_CID	Sector	SiteID	CA_Stat	CA_Freqs	CITYCODE	MAIN_REGION	SUB_REGION
