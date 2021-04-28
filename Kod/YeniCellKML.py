@@ -187,6 +187,7 @@ for cellname in cellnameListGSM:
     city = GSMDict["CITY"][cellname]
     if city in trakya_list:
     #if city == "ISTANBUL" or city == "EDIRNE" or city == "KIRKLARELI" or city == "TEKIRDAG":
+    #
         lat = GSMDict["Lat_Site"][cellname]
         lon = GSMDict["Lon_Site"][cellname]
         azimuth = GSMDict["AZIMUTH"][cellname]
