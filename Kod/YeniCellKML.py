@@ -176,7 +176,7 @@ for siteid in SITEDICT.keys():
         lon = SITEDICT[siteid][2]
         site_name = SITEDICT[siteid][0]
         pnt = dic_site[city].newpoint(name=site_name, coords=[(lon, lat)])
-        pnt.style.labelstyle.scale = 0.5
+        pnt.style.labelstyle.scale = 0.7
         pnt.iconstyle.scale = 0.5
         pnt.iconstyle.color = 'ff0000ff'
         pnt.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/donut.png'
@@ -327,6 +327,8 @@ for siteid in SITEDICT.keys():
         lon = SITEDICT[siteid][2]
         site_name = SITEDICT[siteid][0]
         pnt = dic_site[city].newpoint(name=site_name, coords=[(lon, lat)])
+        pnt.style.labelstyle.scale = 0.7
+        pnt.iconstyle.scale = 0.5
         pnt.iconstyle.color = 'ff0000ff'
         pnt.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/donut.png'
 
@@ -475,6 +477,8 @@ for siteid in SITEDICT.keys():
         lon = SITEDICT[siteid][2]
         site_name = SITEDICT[siteid][0]
         pnt = dic_site[city].newpoint(name=site_name, coords=[(lon, lat)])
+        pnt.style.labelstyle.scale = 0.7
+        pnt.iconstyle.scale = 0.5
         pnt.iconstyle.color = 'ff0000ff'
         pnt.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/donut.png'
 
