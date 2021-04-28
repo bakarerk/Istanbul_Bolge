@@ -74,7 +74,7 @@ def descript(cell_name,site,antenna,azimuth,height,lactac,bcch,bsc):
 
 '''
 
-
+'''
 path  = '/LibraryFiles/'
 filename_1 = 'GSM_Engineering_CellDB.xls'
 filename_2 = 'UMTS_Engineering_CellDB.xls'
@@ -86,7 +86,7 @@ ftp.retrbinary("RETR " + filename_1 ,open(filename_1, 'wb').write)
 ftp.retrbinary("RETR " + filename_2 ,open(filename_2, 'wb').write)
 ftp.retrbinary("RETR " + filename_3 ,open(filename_3, 'wb').write)
 ftp.quit()
-
+'''
 
 LTE = pd.read_csv("LTE_Engineering_CellDB.xls",sep="\t",low_memory=False,index_col="CELLNAME")
 UMTS = pd.read_csv("UMTS_Engineering_CellDB.xls",sep="\t",low_memory=False,index_col="CELLNAME")
@@ -96,18 +96,20 @@ GSMDict = GSM.to_dict()
 UMTSDict = UMTS.to_dict()
 LTEDict = LTE.to_dict()
 
-cellnameListGSM = list(GSM.index)
-cellnameListUMTS = list(UMTS.index)
-cellnameListLTE = list(LTE.index)
+cellnameListGSM = sorted(list(GSM.index))
+cellnameListUMTS = sorted(list(UMTS.index))
+cellnameListLTE = sorted(list(LTE.index))
 
-techSytle = {"GSM":{"beam":60,"inner":0,"outer":0.01,"color":"9864b736"}, \
-             "UMTS":{"beam":60,"inner":0,"outer":0.01,"color":"851f03a4"}, \
-             "6300":{"beam":60,"inner":0.0101,"outer":0.015,"color":"85381e33"}, \
-             "3725":{"beam":60,"inner":0.0151,"outer":0.02,"color":"85ff00aa"}, \
-             "1899":{"beam":60,"inner":0.0201,"outer":0.025,"color":"85ff5500"}, \
-             "301":{"beam":60,"inner":0.0251,"outer":0.03,"color":"850095e5"}, \
-             "3075":{"beam":60,"inner":0.0301,"outer":0.035,"color":"85f69b45"}, \
-             "37950":{"beam":60,"inner":0.0351,"outer":0.04,"color":"85f69b45"}}
+techSytle = {"GSM":{"beam":40,"inner":0,"outer":0.01,"color":"9864b736"}, \
+             "UMTS":{"beam":40,"inner":0,"outer":0.01,"color":"851f03a4"}, \
+             "6300":{"beam":40,"inner":0.01,"outer":0.015,"color":"85381e33"}, \
+             "3725":{"beam":40,"inner":0.015,"outer":0.02,"color":"85ff00aa"}, \
+             "1899":{"beam":40,"inner":0.02,"outer":0.025,"color":"85ff5500"}, \
+             "301":{"beam":40,"inner":0.025,"outer":0.03,"color":"850095e5"}, \
+             "3075":{"beam":40,"inner":0.03,"outer":0.035,"color":"85f69b45"}, \
+             "37950":{"beam":40,"inner":0.035,"outer":0.04,"color":"85f69b45"}}
+cellwidth = 2
+h = 5
 
 kml_trakya = simplekml.Kml()
 site_folder = kml_trakya.newfolder(name='Site')
@@ -115,13 +117,26 @@ gsm_folder = kml_trakya.newfolder(name='GSM')
 umts_folder = kml_trakya.newfolder(name='UMTS')
 lte_folder = kml_trakya.newfolder(name='LTE')
 
-avrupa_list = ['BEYLIKDUZU', 'BAKIRKOY', 'BESIKTAS', 'FATIH', 'EYUP', 'GAZIOSMANPASA', 'BEYOGLU',
+avrupa_list = ['BEYLIKDUZU', 'BAKIRKOY', 'BESIKTAS', 'FATIH', 'EYUPSULTAN', 'GAZIOSMANPASA', 'BEYOGLU',
                     'KAGITHANE', 'SARIYER', 'ZEYTINBURNU', 'SISLI', 'KUCUKCEKMECE', 'CATALCA',
                     'AVCILAR', 'SILIVRI', 'BAHCELIEVLER', 'ESENYURT', 'ARNAVUTKOY', 'BUYUKCEKMECE',
                     'BAGCILAR', 'BASAKSEHIR', 'ESENLER', 'BAYRAMPASA', 'GUNGOREN', 'SULTANGAZI']
 asya_list = ['KADIKOY', 'USKUDAR', 'TUZLA', 'SANCAKTEPE', 'BEYKOZ', 'CEKMEKOY', 'PENDIK', 'KARTAL',
                   'MALTEPE', 'UMRANIYE', 'SILE', 'ATASEHIR', 'ADALAR', 'SULTANBEYLI']
 trakya_list = ['TEKIRDAG', 'EDIRNE', 'KIRKLARELI']
+
+dic_gsm = {}
+dic_umts = {}
+dic_lte = {}
+for i in trakya_list:
+    #dic[i] = site.newfolder()
+    #dic[i].name = i
+    dic_gsm[i] = gsm_folder.newfolder()
+    dic_gsm[i].name = i
+    dic_umts[i] = umts_folder.newfolder()
+    dic_umts[i].name = i
+    dic_lte[i] =  lte_folder.newfolder()
+    dic_lte[i].name  = i
 
 ####GSM KISMI
 # CELLNAME	CITY	DISTRICT	REGION	SITE_NAME	Site_ID	LAC	CI	BCCHNO	NCC	BCC	BSC
@@ -144,13 +159,13 @@ for cellname in cellnameListGSM:
         bcch = GSMDict["BCCHNO"][cellname]
         bsc = GSMDict["BSC"][cellname]
 
-        gsm_cell = gsm_folder.newpolygon(name=cellname)
-        gsm_cell.outerboundaryis = [(lon,lat,10), (d1[1],d1[0],10),(d2[1],d2[0],10),(lon,lat,10)]
+        gsm_cell = dic_gsm[city].newpolygon(name=cellname)
+        gsm_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
         gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
         gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
-        gsm_cell.style.linestyle.width = 2.8
+        gsm_cell.style.linestyle.width = cellwidth
         gsm_cell.extrude = 1
-        gsm_cell.fill = 1
+        gsm_cell.style.polystyle.fill = 1
         gsm_cell.outline = 1
         gsm_cell.altitudemode = simplekml.AltitudeMode.relativetoground
         gsm_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
@@ -177,13 +192,13 @@ for cellname in cellnameListUMTS:
         bcch = UMTSDict["PSCRAMBCODE"][cellname]
         bsc = UMTSDict["RNCNAME"][cellname]
 
-        umts_cell = umts_folder.newpolygon(name=cellname)
-        umts_cell.outerboundaryis = [(lon,lat,10), (d1[1],d1[0],10),(d2[1],d2[0],10),(lon,lat,10)]
+        umts_cell = dic_umts[city].newpolygon(name=cellname)
+        umts_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
         umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
         umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
-        umts_cell.style.linestyle.width = 2.8
+        umts_cell.style.linestyle.width = cellwidth
         umts_cell.extrude = 1
-        umts_cell.fill = 1
+        umts_cell.style.polystyle.fill = 1
         umts_cell.outline = 1
         umts_cell.altitudemode = simplekml.AltitudeMode.relativetoground
         umts_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
@@ -218,18 +233,19 @@ for cellname in cellnameListLTE:
         bcch = LTEDict["PHYCELLID"][cellname]
         bsc = ""
 
-        lte_cell = lte_folder.newpolygon(name=cellname)
-        lte_cell.outerboundaryis = [(d0[1],d0[0],20), (d1[1],d1[0],20),(d2[1],d2[0],20),(d4[1],d4[0],20)]
+        lte_cell = dic_lte[city].newpolygon(name=cellname)
+        #lte_cell.outerboundaryis = [(d2[1],d2[0],h),(d1[1],d1[0],h),(d0[1],d0[0],h),(d4[1],d4[0],h)]
+        lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(d0[1],d0[0],h)]
         lte_cell.style.polystyle.color = techSytle[band]["color"]
         lte_cell.style.linestyle.color = techSytle[band]["color"]
-        lte_cell.style.linestyle.width = 2.8
+        lte_cell.style.linestyle.width = cellwidth
         lte_cell.extrude = 1
-        lte_cell.fill = 1
+        lte_cell.style.polystyle.fill = 1
         lte_cell.outline = 1
         lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
         lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
-kml_trakya.savekmz("Polygon Styling.kmz",False)
+kml_trakya.savekmz("TRAKYA.kmz",False)
 
 #print(newDictGSM["SITE_NAME"]["GM277020O6129802"])
 #for i in newDictGSM.keys():
@@ -238,12 +254,24 @@ kml_trakya.savekmz("Polygon Styling.kmz",False)
 '''
 AVRUPA
 '''
-
 kml_avrupa = simplekml.Kml()
 site_folder_avrupa = kml_avrupa.newfolder(name='Site')
 gsm_folder_avrupa = kml_avrupa.newfolder(name='GSM')
 umts_folder_avrupa = kml_avrupa.newfolder(name='UMTS')
 lte_folder_avrupa = kml_avrupa.newfolder(name='LTE')
+
+dic_gsm = {}
+dic_umts = {}
+dic_lte = {}
+for i in avrupa_list:
+    #dic[i] = site.newfolder()
+    #dic[i].name = i
+    dic_gsm[i] = gsm_folder_avrupa.newfolder()
+    dic_gsm[i].name = i
+    dic_umts[i] = umts_folder_avrupa.newfolder()
+    dic_umts[i].name = i
+    dic_lte[i] =  lte_folder_avrupa.newfolder()
+    dic_lte[i].name  = i
 ####GSM KISMI
 # CELLNAME	CITY	DISTRICT	REGION	SITE_NAME	Site_ID	LAC	CI	BCCHNO	NCC	BCC	BSC
 # Lat_Site	Lon_Site	AZIMUTH	M_TILT	E_TILT	HEIGHT	TRX_NUM
@@ -266,11 +294,11 @@ for cellname in cellnameListGSM:
         bcch = GSMDict["BCCHNO"][cellname]
         bsc = GSMDict["BSC"][cellname]
 
-        gsm_cell = gsm_folder_avrupa.newpolygon(name=cellname)
-        gsm_cell.outerboundaryis = [(lon,lat,10), (d1[1],d1[0],10),(d2[1],d2[0],10),(lon,lat,10)]
+        gsm_cell = dic_gsm[district].newpolygon(name=cellname)
+        gsm_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
         gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
         gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
-        gsm_cell.style.linestyle.width = 2.8
+        gsm_cell.style.linestyle.width = cellwidth
         gsm_cell.extrude = 1
         gsm_cell.fill = 1
         gsm_cell.outline = 1
@@ -300,11 +328,11 @@ for cellname in cellnameListUMTS:
         bcch = UMTSDict["PSCRAMBCODE"][cellname]
         bsc = UMTSDict["RNCNAME"][cellname]
 
-        umts_cell = umts_folder_avrupa.newpolygon(name=cellname)
-        umts_cell.outerboundaryis = [(lon,lat,10), (d1[1],d1[0],10),(d2[1],d2[0],10),(lon,lat,10)]
+        umts_cell = dic_umts[district].newpolygon(name=cellname)
+        umts_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
         umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
         umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
-        umts_cell.style.linestyle.width = 2.8
+        umts_cell.style.linestyle.width = cellwidth
         umts_cell.extrude = 1
         umts_cell.fill = 1
         umts_cell.outline = 1
@@ -342,18 +370,18 @@ for cellname in cellnameListLTE:
         bcch = LTEDict["PHYCELLID"][cellname]
         bsc = ""
 
-        lte_cell = lte_folder_avrupa.newpolygon(name=cellname)
-        lte_cell.outerboundaryis = [(d0[1],d0[0],20), (d1[1],d1[0],20),(d2[1],d2[0],20),(d4[1],d4[0],20)]
+        lte_cell = dic_lte[district].newpolygon(name=cellname)
+        lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(d0[1],d0[0],h)]
         lte_cell.style.polystyle.color = techSytle[band]["color"]
         lte_cell.style.linestyle.color = techSytle[band]["color"]
-        lte_cell.style.linestyle.width = 2.8
+        lte_cell.style.linestyle.width = cellwidth
         lte_cell.extrude = 1
         lte_cell.fill = 1
         lte_cell.outline = 1
         lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
         lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
-kml_avrupa.savekmz("Polygon Styling_avrupa.kmz",False)
+kml_avrupa.savekmz("AVRUPA.kmz",False)
 
 
 '''
@@ -365,6 +393,20 @@ site_folder_asya = kml_asya.newfolder(name='Site')
 gsm_folder_asya = kml_asya.newfolder(name='GSM')
 umts_folder_asya = kml_asya.newfolder(name='UMTS')
 lte_folder_asya = kml_asya.newfolder(name='LTE')
+
+dic_gsm = {}
+dic_umts = {}
+dic_lte = {}
+for i in asya_list:
+    #dic[i] = site.newfolder()
+    #dic[i].name = i
+    dic_gsm[i] = gsm_folder_asya.newfolder()
+    dic_gsm[i].name = i
+    dic_umts[i] = umts_folder_asya.newfolder()
+    dic_umts[i].name = i
+    dic_lte[i] =  lte_folder_asya.newfolder()
+    dic_lte[i].name  = i
+
 ####GSM KISMI
 # CELLNAME	CITY	DISTRICT	REGION	SITE_NAME	Site_ID	LAC	CI	BCCHNO	NCC	BCC	BSC
 # Lat_Site	Lon_Site	AZIMUTH	M_TILT	E_TILT	HEIGHT	TRX_NUM
@@ -387,11 +429,11 @@ for cellname in cellnameListGSM:
         bcch = GSMDict["BCCHNO"][cellname]
         bsc = GSMDict["BSC"][cellname]
 
-        gsm_cell = gsm_folder_asya.newpolygon(name=cellname)
-        gsm_cell.outerboundaryis = [(lon,lat,10), (d1[1],d1[0],10),(d2[1],d2[0],10),(lon,lat,10)]
+        gsm_cell = dic_gsm[district].newpolygon(name=cellname)
+        gsm_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
         gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
         gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
-        gsm_cell.style.linestyle.width = 2.8
+        gsm_cell.style.linestyle.width = cellwidth
         gsm_cell.extrude = 1
         gsm_cell.fill = 1
         gsm_cell.outline = 1
@@ -421,11 +463,11 @@ for cellname in cellnameListUMTS:
         bcch = UMTSDict["PSCRAMBCODE"][cellname]
         bsc = UMTSDict["RNCNAME"][cellname]
 
-        umts_cell = umts_folder_asya.newpolygon(name=cellname)
-        umts_cell.outerboundaryis = [(lon,lat,10), (d1[1],d1[0],10),(d2[1],d2[0],10),(lon,lat,10)]
+        umts_cell = dic_umts[district].newpolygon(name=cellname)
+        umts_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
         umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
         umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
-        umts_cell.style.linestyle.width = 2.8
+        umts_cell.style.linestyle.width = cellwidth
         umts_cell.extrude = 1
         umts_cell.fill = 1
         umts_cell.outline = 1
@@ -463,15 +505,15 @@ for cellname in cellnameListLTE:
         bcch = LTEDict["PHYCELLID"][cellname]
         bsc = ""
 
-        lte_cell = lte_folder_asya.newpolygon(name=cellname)
-        lte_cell.outerboundaryis = [(d0[1],d0[0],20), (d1[1],d1[0],20),(d2[1],d2[0],20),(d4[1],d4[0],20)]
+        lte_cell = dic_lte[district].newpolygon(name=cellname)
+        lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(d0[1],d0[0],h)]
         lte_cell.style.polystyle.color = techSytle[band]["color"]
         lte_cell.style.linestyle.color = techSytle[band]["color"]
-        lte_cell.style.linestyle.width = 2.8
+        lte_cell.style.linestyle.width = cellwidth
         lte_cell.extrude = 1
         lte_cell.fill = 1
         lte_cell.outline = 1
         lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
         lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
-kml_asya.savekmz("Polygon Styling_asya.kmz",False)
+kml_asya.savekmz("ASYA.kmz",False)
