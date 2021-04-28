@@ -58,7 +58,7 @@ class MyWindow:
         
         self.checkbox.place(x=140, y=115)
  
-        self.load_img = Image.open('C:\\Users\\retter\\Desktop\\Tkinter\\import.png')
+        self.load_img = Image.open('import.png')
 
         
         self.load_img = self.load_img.resize((150, 40))#, Image.ANTIALIAS)
@@ -71,7 +71,7 @@ class MyWindow:
 
         #self.convert_button = ttk.Button(self.parent, text='Convert To KMZ', command=self.convert_kmz)
         
-        self.convert_img = Image.open('C:\\Users\\retter\\Desktop\\Tkinter\\convert.png')
+        self.convert_img = Image.open('convert.png')
         
         self.convert_img = self.convert_img.resize((150, 40))#, Image.ANTIALIAS)
         self.convert_img = ImageTk.PhotoImage(self.convert_img)
@@ -237,18 +237,18 @@ class MyWindow:
             camera = avrupa_camera
             site_sub = site_df[site_df['DISTRICT'].isin(self.avrupa_list)]
             print(site_sub)
-            kml_path = "\\Users\\retter\\Desktop\\Tkinter\\AVRUPA.kmz"
+            kml_path = "AVRUPA.kmz"
             
         elif(self.region == 'Asya'):
             camera = asya_camera
             site_sub = site_df[site_df['DISTRICT'].isin(self.asya_list)]
-            kml_path = "\\Users\\retter\\Desktop\\Tkinter\\ASYA.kmz"
+            kml_path = "ASYA.kmz"
         
         #else:
         elif(self.region == 'Trakya'):
             camera = trakya_camera
             site_sub = site_df[site_df['CITY'].isin(self.trakya_list)]
-            kml_path = "\\Users\\retter\\Desktop\\Tkinter\\TRAKYA.kmz"
+            kml_path = "TRAKYA.kmz"
             
         
         
@@ -372,7 +372,6 @@ class MyWindow:
             south_dx_dy = float(lat) - (180/np.pi)*(10/6378137)
             west_dx_dy = float(lon) - (180/np.pi)*(10/6378137)
             site_address = site['SITE_ADDRESS']
-
 
 
             lod = simplekml.Lod(minlodpixels=7)
@@ -653,7 +652,7 @@ if __name__ == '__main__':
   
     root = ThemedTk()
     root.geometry('450x350')
-    root.iconbitmap('C:\\Users\\retter\\Desktop\\Tkinter\\cropped_1.ico')
+    root.iconbitmap('cropped_1.ico')
     root.title(' KMZ Maker')
     #p1 = tk.PhotoImage(file = 'C:\\Users\\retter\\Desktop\\Tkinter\\icon.png')
 # Icon set for program window

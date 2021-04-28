@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['C:\\Users\\retter\\Desktop\\Tkinter\\Atoll'],
+             pathex=['C:\\Users\\erkan.bakar\\PycharmProjects\\Istanbul_Bolge\\Kod'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -30,4 +30,4 @@ exe = EXE(pyz,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=False )
+          console=True )

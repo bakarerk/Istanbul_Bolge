@@ -265,6 +265,30 @@ lte_folder_avrupa = kml_avrupa.newfolder(name='LTE')
 dic_gsm = {}
 dic_umts = {}
 dic_lte = {}
+SITEDICT = {}
+
+for cell in cellnameListGSM:
+    lat = GSMDict["Lat_Site"][cell]
+    lon = GSMDict["Lon_Site"][cell]
+    sitename = GSMDict["SITE_NAME"][cell]
+    siteid = cell[1:6]
+    SITEDICT[siteid] = [sitename,lat,lon]
+for cell in cellnameListUMTS:
+    lat = UMTSDict["Lat_Site"][cell]
+    lon = UMTSDict["Lon_Site"][cell]
+    sitename = UMTSDict["NODEBNAME"][cell]
+    siteid = cell[1:6]
+    SITEDICT[siteid] = [sitename,lat,lon]
+for cell in cellnameListLTE:
+    lat = LTEDict["Lat_Site"][cell]
+    lon = LTEDict["Lon_Site"][cell]
+    sitename = LTEDict["ENODEBNAME"][cell]
+    siteid = cell[1:6]
+    SITEDICT[siteid] = [sitename,lat,lon]
+
+for i in SITEDICT.keys():
+    print(SITEDICT[i])
+
 for i in avrupa_list:
     #dic[i] = site.newfolder()
     #dic[i].name = i
@@ -365,6 +389,8 @@ for cellname in cellnameListLTE:
         d2 = getEndpoint(lat,lon,azimuth - beam/2,outer)
         d0 = getEndpoint(lat,lon,azimuth + beam/2,inner)
         d4 = getEndpoint(lat,lon,azimuth - beam/2,inner)
+        midin = getEndpoint(lat, lon, azimuth, inner + 0.002)
+        midout = getEndpoint(lat, lon, azimuth, outer + 0.002)
         site = LTEDict["EnodebName"][cellname]
         antenna = LTEDict["ANTENNA"][cellname]
         height = LTEDict["HEIGHT"][cellname]
@@ -373,7 +399,7 @@ for cellname in cellnameListLTE:
         bsc = ""
 
         lte_cell = dic_lte[district].newpolygon(name=cellname)
-        lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(d0[1],d0[0],h)]
+        lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(midout[1],midout[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(midin[1],midin[0],h),(d0[1],d0[0],h)]
         lte_cell.style.polystyle.color = techSytle[band]["color"]
         lte_cell.style.linestyle.color = techSytle[band]["color"]
         lte_cell.style.linestyle.width = cellwidth
@@ -500,6 +526,8 @@ for cellname in cellnameListLTE:
         d2 = getEndpoint(lat,lon,azimuth - beam/2,outer)
         d0 = getEndpoint(lat,lon,azimuth + beam/2,inner)
         d4 = getEndpoint(lat,lon,azimuth - beam/2,inner)
+        midin = getEndpoint(lat, lon, azimuth, inner + 0.002)
+        midout = getEndpoint(lat, lon, azimuth, outer + 0.002)
         site = LTEDict["EnodebName"][cellname]
         antenna = LTEDict["ANTENNA"][cellname]
         height = LTEDict["HEIGHT"][cellname]
@@ -508,7 +536,7 @@ for cellname in cellnameListLTE:
         bsc = ""
 
         lte_cell = dic_lte[district].newpolygon(name=cellname)
-        lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(d0[1],d0[0],h)]
+        lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(midout[1],midout[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(midin[1],midin[0],h),(d0[1],d0[0],h)]
         lte_cell.style.polystyle.color = techSytle[band]["color"]
         lte_cell.style.linestyle.color = techSytle[band]["color"]
         lte_cell.style.linestyle.width = cellwidth
