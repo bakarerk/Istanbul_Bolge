@@ -100,16 +100,16 @@ cellnameListGSM = sorted(list(GSM.index))
 cellnameListUMTS = sorted(list(UMTS.index))
 cellnameListLTE = sorted(list(LTE.index))
 
-techSytle = {"GSM":{"beam":40,"inner":0,"outer":0.01,"color":"9864b736"}, \
-             "UMTS":{"beam":40,"inner":0,"outer":0.01,"color":"851f03a4"}, \
-             "6300":{"beam":40,"inner":0.01,"outer":0.015,"color":"85381e33"}, \
-             "3725":{"beam":40,"inner":0.015,"outer":0.02,"color":"85ff00aa"}, \
-             "1899":{"beam":40,"inner":0.02,"outer":0.025,"color":"85ff5500"}, \
-             "301":{"beam":40,"inner":0.025,"outer":0.03,"color":"850095e5"}, \
-             "3075":{"beam":40,"inner":0.03,"outer":0.035,"color":"85f69b45"}, \
-             "37950":{"beam":40,"inner":0.035,"outer":0.04,"color":"85f69b45"}}
+techSytle = {"GSM":{"beam":40,"inner":0,"outer":0.02,"color":"9864b736"}, \
+             "UMTS":{"beam":40,"inner":0,"outer":0.02,"color":"851f03a4"}, \
+             "6300":{"beam":40,"inner":0.02,"outer":0.025,"color":"85381e33"}, \
+             "3725":{"beam":40,"inner":0.025,"outer":0.03,"color":"85ff00aa"}, \
+             "1899":{"beam":40,"inner":0.03,"outer":0.035,"color":"85ff5500"}, \
+             "301":{"beam":40,"inner":0.035,"outer":0.04,"color":"850095e5"}, \
+             "3075":{"beam":40,"inner":0.04,"outer":0.045,"color":"85f69b45"}, \
+             "37950":{"beam":40,"inner":0.045,"outer":0.05,"color":"85f69b45"}}
 cellwidth = 2
-h = 5
+h = 10
 
 kml_trakya = simplekml.Kml()
 site_folder = kml_trakya.newfolder(name='Site')
@@ -226,6 +226,8 @@ for cellname in cellnameListLTE:
         d2 = getEndpoint(lat,lon,azimuth - beam/2,outer)
         d0 = getEndpoint(lat,lon,azimuth + beam/2,inner)
         d4 = getEndpoint(lat,lon,azimuth - beam/2,inner)
+        midin = getEndpoint(lat,lon,azimuth,inner+0.002)
+        midout = getEndpoint(lat,lon,azimuth,outer+0.002)
         site = LTEDict["EnodebName"][cellname]
         antenna = LTEDict["ANTENNA"][cellname]
         height = LTEDict["HEIGHT"][cellname]
@@ -235,7 +237,7 @@ for cellname in cellnameListLTE:
 
         lte_cell = dic_lte[city].newpolygon(name=cellname)
         #lte_cell.outerboundaryis = [(d2[1],d2[0],h),(d1[1],d1[0],h),(d0[1],d0[0],h),(d4[1],d4[0],h)]
-        lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(d0[1],d0[0],h)]
+        lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(midout[1],midout[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(midin[1],midin[0],h),(d0[1],d0[0],h)]
         lte_cell.style.polystyle.color = techSytle[band]["color"]
         lte_cell.style.linestyle.color = techSytle[band]["color"]
         lte_cell.style.linestyle.width = cellwidth
