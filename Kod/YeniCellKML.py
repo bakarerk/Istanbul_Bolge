@@ -116,6 +116,7 @@ site_folder = kml_trakya.newfolder(name='Site')
 gsm_folder = kml_trakya.newfolder(name='GSM')
 umts_folder = kml_trakya.newfolder(name='UMTS')
 lte_folder = kml_trakya.newfolder(name='LTE')
+site_folder.visibility = 0
 
 avrupa_list = ['BEYLIKDUZU', 'BAKIRKOY', 'BESIKTAS', 'FATIH', 'EYUPSULTAN', 'GAZIOSMANPASA', 'BEYOGLU',
                     'KAGITHANE', 'SARIYER', 'ZEYTINBURNU', 'SISLI', 'KUCUKCEKMECE', 'CATALCA',
@@ -125,12 +126,13 @@ asya_list = ['KADIKOY', 'USKUDAR', 'TUZLA', 'SANCAKTEPE', 'BEYKOZ', 'CEKMEKOY', 
                   'MALTEPE', 'UMRANIYE', 'SILE', 'ATASEHIR', 'ADALAR', 'SULTANBEYLI']
 trakya_list = ['TEKIRDAG', 'EDIRNE', 'KIRKLARELI']
 
+dic_site = {}
 dic_gsm = {}
 dic_umts = {}
 dic_lte = {}
 for i in trakya_list:
-    #dic[i] = site.newfolder()
-    #dic[i].name = i
+    dic_site[i] = site_folder.newfolder()
+    dic_site[i].name = i
     dic_gsm[i] = gsm_folder.newfolder()
     dic_gsm[i].name = i
     dic_umts[i] = umts_folder.newfolder()
@@ -138,6 +140,46 @@ for i in trakya_list:
     dic_lte[i] =  lte_folder.newfolder()
     dic_lte[i].name  = i
 
+
+SITEDICT = {}
+for cell in cellnameListGSM:
+    lat = GSMDict["Lat_Site"][cell]
+    lon = GSMDict["Lon_Site"][cell]
+    city = GSMDict["CITY"][cell]
+    district = GSMDict["DISTRICT"][cell]
+    sitename = GSMDict["SITE_NAME"][cell]
+    siteid = cell[1:6]
+    SITEDICT[siteid] = [sitename,lat,lon,city,district]
+for cell in cellnameListUMTS:
+    lat = UMTSDict["Lat_Site"][cell]
+    lon = UMTSDict["Lon_Site"][cell]
+    city = UMTSDict["City"][cell]
+    district = UMTSDict["DISTRICT"][cell]
+    sitename = UMTSDict["NODEBNAME"][cell]
+    siteid = cell[1:6]
+    SITEDICT[siteid] = [sitename,lat,lon,city,district]
+for cell in cellnameListLTE:
+    lat = LTEDict["Lat_Site"][cell]
+    lon = LTEDict["Lon_Site"][cell]
+    city = LTEDict["City"][cell]
+    district = LTEDict["DISTRICT"][cell]
+    sitename = LTEDict["EnodebName"][cell]
+    siteid = cell[1:6]
+    SITEDICT[siteid] = [sitename,lat,lon,city,district]
+
+# SITE KISMI
+for siteid in SITEDICT.keys():
+    city = SITEDICT[siteid][3]
+    if city in trakya_list:
+        style = simplekml.Style()
+        lat = SITEDICT[siteid][1]
+        lon = SITEDICT[siteid][2]
+        site_name = SITEDICT[siteid][0]
+        pnt = dic_site[city].newpoint(name=site_name, coords=[(lon, lat)])
+        pnt.style.labelstyle.scale = 0.5
+        pnt.iconstyle.scale = 0.5
+        pnt.iconstyle.color = 'ff0000ff'
+        pnt.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/donut.png'
 ####GSM KISMI
 # CELLNAME	CITY	DISTRICT	REGION	SITE_NAME	Site_ID	LAC	CI	BCCHNO	NCC	BCC	BSC
 # Lat_Site	Lon_Site	AZIMUTH	M_TILT	E_TILT	HEIGHT	TRX_NUM
@@ -265,39 +307,28 @@ lte_folder_avrupa = kml_avrupa.newfolder(name='LTE')
 dic_gsm = {}
 dic_umts = {}
 dic_lte = {}
-SITEDICT = {}
-
-for cell in cellnameListGSM:
-    lat = GSMDict["Lat_Site"][cell]
-    lon = GSMDict["Lon_Site"][cell]
-    sitename = GSMDict["SITE_NAME"][cell]
-    siteid = cell[1:6]
-    SITEDICT[siteid] = [sitename,lat,lon]
-for cell in cellnameListUMTS:
-    lat = UMTSDict["Lat_Site"][cell]
-    lon = UMTSDict["Lon_Site"][cell]
-    sitename = UMTSDict["NODEBNAME"][cell]
-    siteid = cell[1:6]
-    SITEDICT[siteid] = [sitename,lat,lon]
-for cell in cellnameListLTE:
-    lat = LTEDict["Lat_Site"][cell]
-    lon = LTEDict["Lon_Site"][cell]
-    sitename = LTEDict["ENODEBNAME"][cell]
-    siteid = cell[1:6]
-    SITEDICT[siteid] = [sitename,lat,lon]
-
-for i in SITEDICT.keys():
-    print(SITEDICT[i])
 
 for i in avrupa_list:
-    #dic[i] = site.newfolder()
-    #dic[i].name = i
+    dic_site[i] = site_folder_avrupa.newfolder()
+    dic_site[i].name = i
     dic_gsm[i] = gsm_folder_avrupa.newfolder()
     dic_gsm[i].name = i
     dic_umts[i] = umts_folder_avrupa.newfolder()
     dic_umts[i].name = i
     dic_lte[i] =  lte_folder_avrupa.newfolder()
     dic_lte[i].name  = i
+
+# SITE KISMI
+for siteid in SITEDICT.keys():
+    city = SITEDICT[siteid][4]
+    if city in avrupa_list:
+        lat = SITEDICT[siteid][1]
+        lon = SITEDICT[siteid][2]
+        site_name = SITEDICT[siteid][0]
+        pnt = dic_site[city].newpoint(name=site_name, coords=[(lon, lat)])
+        pnt.iconstyle.color = 'ff0000ff'
+        pnt.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/donut.png'
+
 ####GSM KISMI
 # CELLNAME	CITY	DISTRICT	REGION	SITE_NAME	Site_ID	LAC	CI	BCCHNO	NCC	BCC	BSC
 # Lat_Site	Lon_Site	AZIMUTH	M_TILT	E_TILT	HEIGHT	TRX_NUM
@@ -421,19 +452,30 @@ site_folder_asya = kml_asya.newfolder(name='Site')
 gsm_folder_asya = kml_asya.newfolder(name='GSM')
 umts_folder_asya = kml_asya.newfolder(name='UMTS')
 lte_folder_asya = kml_asya.newfolder(name='LTE')
-
+site_folder_asya.visibility = 0
 dic_gsm = {}
 dic_umts = {}
 dic_lte = {}
 for i in asya_list:
-    #dic[i] = site.newfolder()
-    #dic[i].name = i
+    dic_site[i] = site_folder_asya.newfolder()
+    dic_site[i].name = i
     dic_gsm[i] = gsm_folder_asya.newfolder()
     dic_gsm[i].name = i
     dic_umts[i] = umts_folder_asya.newfolder()
     dic_umts[i].name = i
     dic_lte[i] =  lte_folder_asya.newfolder()
     dic_lte[i].name  = i
+
+# SITE KISMI
+for siteid in SITEDICT.keys():
+    city = SITEDICT[siteid][4]
+    if city in asya_list:
+        lat = SITEDICT[siteid][1]
+        lon = SITEDICT[siteid][2]
+        site_name = SITEDICT[siteid][0]
+        pnt = dic_site[city].newpoint(name=site_name, coords=[(lon, lat)])
+        pnt.iconstyle.color = 'ff0000ff'
+        pnt.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/donut.png'
 
 ####GSM KISMI
 # CELLNAME	CITY	DISTRICT	REGION	SITE_NAME	Site_ID	LAC	CI	BCCHNO	NCC	BCC	BSC
