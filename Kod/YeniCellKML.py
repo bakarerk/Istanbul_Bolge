@@ -328,7 +328,7 @@ for cellname in cellnameListLTE:
             lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
             lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
-kml_trakya.savekmz("TRAKYA.kmz",False)
+kml_trakya.savekmz("//vfdrive/vol1_filesrv/Optimizasyon_Mudurlugu-Istanbul_Avrupa/00.KML/TRAKYA.kmz",False)
 
 #print(newDictGSM["SITE_NAME"]["GM277020O6129802"])
 #for i in newDictGSM.keys():
@@ -521,7 +521,7 @@ for cellname in cellnameListLTE:
             lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
             lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
-kml_avrupa.savekmz("AVRUPA.kmz",False)
+kml_avrupa.savekmz("//vfdrive/vol1_filesrv/Optimizasyon_Mudurlugu-Istanbul_Avrupa/00.KML/AVRUPA.kmz",False)
 
 
 '''
@@ -713,4 +713,4 @@ for cellname in cellnameListLTE:
             lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
             lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
-kml_asya.savekmz("ASYA.kmz",False)
+kml_asya.savekmz("//vfdrive/vol1_filesrv/Optimizasyon_Mudurlugu-Istanbul_Avrupa/00.KML/ASYA.kmz",False)
