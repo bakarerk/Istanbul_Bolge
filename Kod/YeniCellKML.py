@@ -3,6 +3,7 @@ from geographiclib.geodesic import Geodesic
 import simplekml
 import ftplib
 import pandas as pd
+from polycircles import polycircles
 
 def getEndpoint(lat1, lon1, bearing, d):
     geod = Geodesic(Constants.WGS84_a, Constants.WGS84_f)
@@ -94,18 +95,19 @@ GSMDict = GSM.to_dict()
 UMTSDict = UMTS.to_dict()
 LTEDict = LTE.to_dict()
 
+
 cellnameListGSM = sorted(list(GSM.index))
 cellnameListUMTS = sorted(list(UMTS.index))
 cellnameListLTE = sorted(list(LTE.index))
 
-techSytle = {"GSM":{"beam":40,"inner":0,"outer":0.02,"color":"9864b736"}, \
-             "UMTS":{"beam":40,"inner":0,"outer":0.02,"color":"851f03a4"}, \
-             "6300":{"beam":40,"inner":0.02,"outer":0.025,"color":"85381e33"}, \
-             "3725":{"beam":40,"inner":0.025,"outer":0.03,"color":"85ff00aa"}, \
-             "1899":{"beam":40,"inner":0.03,"outer":0.035,"color":"85ff5500"}, \
-             "301":{"beam":40,"inner":0.035,"outer":0.04,"color":"850095e5"}, \
-             "3075":{"beam":40,"inner":0.04,"outer":0.045,"color":"85f69b45"}, \
-             "37950":{"beam":40,"inner":0.045,"outer":0.05,"color":"85f69b45"}}
+techSytle = {"GSM":{"beam":40,"inner":0,"inner_ind":4,"outer":0.02,"outer_ind":10,"color":"9864b736"}, \
+             "UMTS":{"beam":40,"inner":0,"inner_ind":10,"outer":0.02,"outer_ind":16,"color":"851f03a4"}, \
+             "6300":{"beam":40,"inner":0.02,"inner_ind":16,"outer":0.025,"outer_ind":19,"color":"85381e33"}, \
+             "3725":{"beam":40,"inner":0.025,"inner_ind":19,"outer":0.03,"outer_ind":22,"color":"85ff00aa"}, \
+             "1899":{"beam":40,"inner":0.03,"inner_ind":22,"outer":0.035,"outer_ind":25,"color":"85ff5500"}, \
+             "301":{"beam":40,"inner":0.035,"inner_ind":25,"outer":0.04,"outer_ind":28,"color":"850095e5"}, \
+             "3075":{"beam":40,"inner":0.04,"inner_ind":28,"outer":0.045,"outer_ind":31,"color":"85f69b45"}, \
+             "37950":{"beam":40,"inner":0.045,"inner_ind":31,"outer":0.05,"outer_ind":34,"color":"85f69b45"}}
 cellwidth = 2
 h = 10
 
@@ -190,6 +192,8 @@ for cellname in cellnameListGSM:
         lon = GSMDict["Lon_Site"][cellname]
         azimuth = GSMDict["AZIMUTH"][cellname]
         beam = techSytle["GSM"]["beam"]
+        outer_ind = techSytle["GSM"]["outer_ind"]
+        inner_ind = techSytle["GSM"]["inner_ind"]
         radius = techSytle["GSM"]["outer"]
         d1 = getEndpoint(lat,lon,azimuth,radius)
         d2 = getEndpoint(lat,lon,azimuth - beam/2,radius)
@@ -200,16 +204,27 @@ for cellname in cellnameListGSM:
         bcch = GSMDict["BCCHNO"][cellname]
         bsc = GSMDict["BSC"][cellname]
 
-        gsm_cell = dic_gsm[city].newpolygon(name=cellname)
-        gsm_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
-        gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
-        gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
-        gsm_cell.style.linestyle.width = cellwidth
-        gsm_cell.extrude = 1
-        gsm_cell.style.polystyle.fill = 1
-        gsm_cell.outline = 1
-        gsm_cell.altitudemode = simplekml.AltitudeMode.relativetoground
-        gsm_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+        if ('I' in cellname):
+
+            indoor_outer = polycircles.Polycircle(latitude=lat, longitude=lon, radius=outer_ind, number_of_vertices=36)
+            indoor_inner = polycircles.Polycircle(latitude=lat,longitude=lon, radius=inner_ind, number_of_vertices=36)
+            gsm_cell = dic_gsm[city].newpolygon(name=cellname, innerboundaryis=indoor_inner.to_kml(), outerboundaryis=indoor_outer.to_kml())
+            gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
+            gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
+            gsm_cell.extrude = 1
+            gsm_cell.description = descript(cellname, site, antenna, azimuth, height, lac, bcch, bsc)
+
+        else:
+            gsm_cell = dic_gsm[city].newpolygon(name=cellname)
+            gsm_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
+            gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
+            gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
+            gsm_cell.style.linestyle.width = cellwidth
+            gsm_cell.extrude = 1
+            gsm_cell.style.polystyle.fill = 1
+            gsm_cell.outline = 1
+            gsm_cell.altitudemode = simplekml.AltitudeMode.relativetoground
+            gsm_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 ####UMTS KISMI
 #CELLNAME	SectorWithNodeBName	DC_Freqs	DC_Stat	DC_Cells	Sector	Site_ID	REGION	City	DISTRICT	NODEBNAME	NODEBID	CELLID
@@ -224,6 +239,8 @@ for cellname in cellnameListUMTS:
         azimuth = UMTSDict["AZIMUTH"][cellname]
         beam = techSytle["UMTS"]["beam"]
         radius = techSytle["UMTS"]["outer"]
+        outer_ind = techSytle["UMTS"]["outer_ind"]
+        inner_ind = techSytle["UMTS"]["inner_ind"]
         d1 = getEndpoint(lat,lon,azimuth + beam/2,radius)
         d2 = getEndpoint(lat,lon,azimuth,radius)
         site = UMTSDict["NODEBNAME"][cellname]
@@ -233,16 +250,27 @@ for cellname in cellnameListUMTS:
         bcch = UMTSDict["PSCRAMBCODE"][cellname]
         bsc = UMTSDict["RNCNAME"][cellname]
 
-        umts_cell = dic_umts[city].newpolygon(name=cellname)
-        umts_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
-        umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
-        umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
-        umts_cell.style.linestyle.width = cellwidth
-        umts_cell.extrude = 1
-        umts_cell.style.polystyle.fill = 1
-        umts_cell.outline = 1
-        umts_cell.altitudemode = simplekml.AltitudeMode.relativetoground
-        umts_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+        if ('I' in cellname):
+
+            indoor_outer = polycircles.Polycircle(latitude=lat, longitude=lon, radius=outer_ind, number_of_vertices=36)
+            indoor_inner = polycircles.Polycircle(latitude=lat, longitude=lon, radius=inner_ind, number_of_vertices=36)
+            umts_cell = dic_umts[city].newpolygon(name=cellname, innerboundaryis=indoor_inner.to_kml(), outerboundaryis=indoor_outer.to_kml())
+            umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
+            umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
+            umts_cell.extrude = 1
+            umts_cell.description = descript(cellname, site, antenna, azimuth, height, lac, bcch, bsc)
+
+        else:
+            umts_cell = dic_umts[city].newpolygon(name=cellname)
+            umts_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
+            umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
+            umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
+            umts_cell.style.linestyle.width = cellwidth
+            umts_cell.extrude = 1
+            umts_cell.style.polystyle.fill = 1
+            umts_cell.outline = 1
+            umts_cell.altitudemode = simplekml.AltitudeMode.relativetoground
+            umts_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 #LTE kosmı
 #CELLNAME	EnodebName_CID	Sector	SiteID	CA_Stat	CA_Freqs	CITYCODE	MAIN_REGION	SUB_REGION
@@ -262,7 +290,9 @@ for cellname in cellnameListLTE:
         azimuth = LTEDict["AZIMUTH"][cellname]
         beam = techSytle[band]["beam"]
         outer = techSytle[band]["outer"]
+        outer_ind = techSytle[band]["outer_ind"]
         inner = techSytle[band]["inner"]
+        inner_ind = techSytle[band]["inner_ind"]
         d1 = getEndpoint(lat,lon,azimuth + beam/2,outer)
         d2 = getEndpoint(lat,lon,azimuth - beam/2,outer)
         d0 = getEndpoint(lat,lon,azimuth + beam/2,inner)
@@ -275,18 +305,28 @@ for cellname in cellnameListLTE:
         lac = LTEDict["TAC"][cellname]
         bcch = LTEDict["PHYCELLID"][cellname]
         bsc = ""
+        if ('I' in cellname):
 
-        lte_cell = dic_lte[city].newpolygon(name=cellname)
-        #lte_cell.outerboundaryis = [(d2[1],d2[0],h),(d1[1],d1[0],h),(d0[1],d0[0],h),(d4[1],d4[0],h)]
-        lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(midout[1],midout[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(midin[1],midin[0],h),(d0[1],d0[0],h)]
-        lte_cell.style.polystyle.color = techSytle[band]["color"]
-        lte_cell.style.linestyle.color = techSytle[band]["color"]
-        lte_cell.style.linestyle.width = cellwidth
-        lte_cell.extrude = 1
-        lte_cell.style.polystyle.fill = 1
-        lte_cell.outline = 1
-        lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
-        lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+            indoor_outer = polycircles.Polycircle(latitude=lat, longitude=lon, radius=outer_ind, number_of_vertices=36)
+            indoor_inner = polycircles.Polycircle(latitude=lat, longitude=lon, radius=inner_ind, number_of_vertices=36)
+            lte_cell = dic_lte[city].newpolygon(name=cellname, innerboundaryis=indoor_inner.to_kml(), outerboundaryis=indoor_outer.to_kml())
+            lte_cell.style.polystyle.color = techSytle[band]["color"]
+            lte_cell.style.linestyle.color = techSytle[band]["color"]
+            lte_cell.extrude = 1
+            lte_cell.description = descript(cellname, site, antenna, azimuth, height, lac, bcch, bsc)
+
+        else:
+            lte_cell = dic_lte[city].newpolygon(name=cellname)
+            #lte_cell.outerboundaryis = [(d2[1],d2[0],h),(d1[1],d1[0],h),(d0[1],d0[0],h),(d4[1],d4[0],h)]
+            lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(midout[1],midout[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(midin[1],midin[0],h),(d0[1],d0[0],h)]
+            lte_cell.style.polystyle.color = techSytle[band]["color"]
+            lte_cell.style.linestyle.color = techSytle[band]["color"]
+            lte_cell.style.linestyle.width = cellwidth
+            lte_cell.extrude = 1
+            lte_cell.style.polystyle.fill = 1
+            lte_cell.outline = 1
+            lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
+            lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 kml_trakya.savekmz("TRAKYA.kmz",False)
 
@@ -342,6 +382,8 @@ for cellname in cellnameListGSM:
         lon = GSMDict["Lon_Site"][cellname]
         azimuth = GSMDict["AZIMUTH"][cellname]
         beam = techSytle["GSM"]["beam"]
+        outer_ind = techSytle["GSM"]["outer_ind"]
+        inner_ind = techSytle["GSM"]["inner_ind"]
         radius = techSytle["GSM"]["outer"]
         d1 = getEndpoint(lat,lon,azimuth,radius)
         d2 = getEndpoint(lat,lon,azimuth - beam/2,radius)
@@ -352,16 +394,27 @@ for cellname in cellnameListGSM:
         bcch = GSMDict["BCCHNO"][cellname]
         bsc = GSMDict["BSC"][cellname]
 
-        gsm_cell = dic_gsm[district].newpolygon(name=cellname)
-        gsm_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
-        gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
-        gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
-        gsm_cell.style.linestyle.width = cellwidth
-        gsm_cell.extrude = 1
-        gsm_cell.fill = 1
-        gsm_cell.outline = 1
-        gsm_cell.altitudemode = simplekml.AltitudeMode.relativetoground
-        gsm_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+        if ('I' in cellname):
+
+            indoor_outer = polycircles.Polycircle(latitude=lat, longitude=lon, radius=outer_ind, number_of_vertices=36)
+            indoor_inner = polycircles.Polycircle(latitude=lat, longitude=lon, radius=inner_ind, number_of_vertices=36)
+            gsm_cell = dic_gsm[district].newpolygon(name=cellname, innerboundaryis=indoor_inner.to_kml(), outerboundaryis=indoor_outer.to_kml())
+            gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
+            gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
+            gsm_cell.extrude = 1
+            gsm_cell.description = descript(cellname, site, antenna, azimuth, height, lac, bcch, bsc)
+
+        else:
+            gsm_cell = dic_gsm[district].newpolygon(name=cellname)
+            gsm_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
+            gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
+            gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
+            gsm_cell.style.linestyle.width = cellwidth
+            gsm_cell.extrude = 1
+            gsm_cell.fill = 1
+            gsm_cell.outline = 1
+            gsm_cell.altitudemode = simplekml.AltitudeMode.relativetoground
+            gsm_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 ####UMTS KISMI
 #CELLNAME	SectorWithNodeBName	DC_Freqs	DC_Stat	DC_Cells	Sector	Site_ID	REGION	City	DISTRICT	NODEBNAME	NODEBID	CELLID
@@ -377,6 +430,8 @@ for cellname in cellnameListUMTS:
         azimuth = UMTSDict["AZIMUTH"][cellname]
         beam = techSytle["UMTS"]["beam"]
         radius = techSytle["UMTS"]["outer"]
+        outer_ind = techSytle["UMTS"]["outer_ind"]
+        inner_ind = techSytle["UMTS"]["inner_ind"]
         d1 = getEndpoint(lat,lon,azimuth + beam/2,radius)
         d2 = getEndpoint(lat,lon,azimuth,radius)
         site = UMTSDict["NODEBNAME"][cellname]
@@ -386,16 +441,27 @@ for cellname in cellnameListUMTS:
         bcch = UMTSDict["PSCRAMBCODE"][cellname]
         bsc = UMTSDict["RNCNAME"][cellname]
 
-        umts_cell = dic_umts[district].newpolygon(name=cellname)
-        umts_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
-        umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
-        umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
-        umts_cell.style.linestyle.width = cellwidth
-        umts_cell.extrude = 1
-        umts_cell.fill = 1
-        umts_cell.outline = 1
-        umts_cell.altitudemode = simplekml.AltitudeMode.relativetoground
-        umts_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+        if ('I' in cellname):
+
+            indoor_outer = polycircles.Polycircle(latitude=lat, longitude=lon, radius=outer_ind, number_of_vertices=36)
+            indoor_inner = polycircles.Polycircle(latitude=lat, longitude=lon, radius=inner_ind, number_of_vertices=36)
+            umts_cell = dic_umts[district].newpolygon(name=cellname, innerboundaryis=indoor_inner.to_kml(),outerboundaryis=indoor_outer.to_kml())
+            umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
+            umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
+            umts_cell.extrude = 1
+            umts_cell.description = descript(cellname, site, antenna, azimuth, height, lac, bcch, bsc)
+
+        else:
+            umts_cell = dic_umts[district].newpolygon(name=cellname)
+            umts_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
+            umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
+            umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
+            umts_cell.style.linestyle.width = cellwidth
+            umts_cell.extrude = 1
+            umts_cell.fill = 1
+            umts_cell.outline = 1
+            umts_cell.altitudemode = simplekml.AltitudeMode.relativetoground
+            umts_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 #LTE kosmı
 #CELLNAME	EnodebName_CID	Sector	SiteID	CA_Stat	CA_Freqs	CITYCODE	MAIN_REGION	SUB_REGION
@@ -416,6 +482,8 @@ for cellname in cellnameListLTE:
         azimuth = LTEDict["AZIMUTH"][cellname]
         beam = techSytle[band]["beam"]
         outer = techSytle[band]["outer"]
+        outer_ind = techSytle[band]["outer_ind"]
+        inner_ind = techSytle[band]["inner_ind"]
         inner = techSytle[band]["inner"]
         d1 = getEndpoint(lat,lon,azimuth + beam/2,outer)
         d2 = getEndpoint(lat,lon,azimuth - beam/2,outer)
@@ -430,16 +498,28 @@ for cellname in cellnameListLTE:
         bcch = LTEDict["PHYCELLID"][cellname]
         bsc = ""
 
-        lte_cell = dic_lte[district].newpolygon(name=cellname)
-        lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(midout[1],midout[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(midin[1],midin[0],h),(d0[1],d0[0],h)]
-        lte_cell.style.polystyle.color = techSytle[band]["color"]
-        lte_cell.style.linestyle.color = techSytle[band]["color"]
-        lte_cell.style.linestyle.width = cellwidth
-        lte_cell.extrude = 1
-        lte_cell.fill = 1
-        lte_cell.outline = 1
-        lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
-        lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+        if ('I' in cellname):
+
+            indoor_outer = polycircles.Polycircle(latitude=lat, longitude=lon, radius=outer_ind, number_of_vertices=36)
+            indoor_inner = polycircles.Polycircle(latitude=lat, longitude=lon, radius=inner_ind, number_of_vertices=36)
+            lte_cell = dic_lte[district].newpolygon(name=cellname, innerboundaryis=indoor_inner.to_kml(),
+                                            outerboundaryis=indoor_outer.to_kml())
+            lte_cell.style.polystyle.color = techSytle[band]["color"]
+            lte_cell.style.linestyle.color = techSytle[band]["color"]
+            lte_cell.extrude = 1
+            lte_cell.description = descript(cellname, site, antenna, azimuth, height, lac, bcch, bsc)
+
+        else:
+            lte_cell = dic_lte[district].newpolygon(name=cellname)
+            lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(midout[1],midout[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(midin[1],midin[0],h),(d0[1],d0[0],h)]
+            lte_cell.style.polystyle.color = techSytle[band]["color"]
+            lte_cell.style.linestyle.color = techSytle[band]["color"]
+            lte_cell.style.linestyle.width = cellwidth
+            lte_cell.extrude = 1
+            lte_cell.fill = 1
+            lte_cell.outline = 1
+            lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
+            lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 kml_avrupa.savekmz("AVRUPA.kmz",False)
 
@@ -492,6 +572,8 @@ for cellname in cellnameListGSM:
         lon = GSMDict["Lon_Site"][cellname]
         azimuth = GSMDict["AZIMUTH"][cellname]
         beam = techSytle["GSM"]["beam"]
+        outer_ind = techSytle["GSM"]["outer_ind"]
+        inner_ind = techSytle["GSM"]["inner_ind"]
         radius = techSytle["GSM"]["outer"]
         d1 = getEndpoint(lat,lon,azimuth,radius)
         d2 = getEndpoint(lat,lon,azimuth - beam/2,radius)
@@ -502,16 +584,28 @@ for cellname in cellnameListGSM:
         bcch = GSMDict["BCCHNO"][cellname]
         bsc = GSMDict["BSC"][cellname]
 
-        gsm_cell = dic_gsm[district].newpolygon(name=cellname)
-        gsm_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
-        gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
-        gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
-        gsm_cell.style.linestyle.width = cellwidth
-        gsm_cell.extrude = 1
-        gsm_cell.fill = 1
-        gsm_cell.outline = 1
-        gsm_cell.altitudemode = simplekml.AltitudeMode.relativetoground
-        gsm_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+        if ('I' in cellname):
+
+            indoor_outer = polycircles.Polycircle(latitude=lat, longitude=lon, radius=outer_ind, number_of_vertices=36)
+            indoor_inner = polycircles.Polycircle(latitude=lat, longitude=lon, radius=inner_ind, number_of_vertices=36)
+            gsm_cell = dic_gsm[district].newpolygon(name=cellname, innerboundaryis=indoor_inner.to_kml(), outerboundaryis=indoor_outer.to_kml())
+            gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
+            gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
+            gsm_cell.extrude = 1
+            gsm_cell.description = descript(cellname, site, antenna, azimuth, height, lac, bcch, bsc)
+
+        else:
+
+            gsm_cell = dic_gsm[district].newpolygon(name=cellname)
+            gsm_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
+            gsm_cell.style.polystyle.color = techSytle["GSM"]["color"]
+            gsm_cell.style.linestyle.color = techSytle["GSM"]["color"]
+            gsm_cell.style.linestyle.width = cellwidth
+            gsm_cell.extrude = 1
+            gsm_cell.fill = 1
+            gsm_cell.outline = 1
+            gsm_cell.altitudemode = simplekml.AltitudeMode.relativetoground
+            gsm_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 ####UMTS KISMI
 #CELLNAME	SectorWithNodeBName	DC_Freqs	DC_Stat	DC_Cells	Sector	Site_ID	REGION	City	DISTRICT	NODEBNAME	NODEBID	CELLID
@@ -527,6 +621,8 @@ for cellname in cellnameListUMTS:
         azimuth = UMTSDict["AZIMUTH"][cellname]
         beam = techSytle["UMTS"]["beam"]
         radius = techSytle["UMTS"]["outer"]
+        outer_ind = techSytle["UMTS"]["outer_ind"]
+        inner_ind = techSytle["UMTS"]["inner_ind"]
         d1 = getEndpoint(lat,lon,azimuth + beam/2,radius)
         d2 = getEndpoint(lat,lon,azimuth,radius)
         site = UMTSDict["NODEBNAME"][cellname]
@@ -536,16 +632,28 @@ for cellname in cellnameListUMTS:
         bcch = UMTSDict["PSCRAMBCODE"][cellname]
         bsc = UMTSDict["RNCNAME"][cellname]
 
-        umts_cell = dic_umts[district].newpolygon(name=cellname)
-        umts_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
-        umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
-        umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
-        umts_cell.style.linestyle.width = cellwidth
-        umts_cell.extrude = 1
-        umts_cell.fill = 1
-        umts_cell.outline = 1
-        umts_cell.altitudemode = simplekml.AltitudeMode.relativetoground
-        umts_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+        if ('I' in cellname):
+
+            indoor_outer = polycircles.Polycircle(latitude=lat, longitude=lon, radius=outer_ind, number_of_vertices=36)
+            indoor_inner = polycircles.Polycircle(latitude=lat, longitude=lon, radius=inner_ind, number_of_vertices=36)
+            umts_cell = dic_umts[district].newpolygon(name=cellname, innerboundaryis=indoor_inner.to_kml(),
+                                                  outerboundaryis=indoor_outer.to_kml())
+            umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
+            umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
+            umts_cell.extrude = 1
+            umts_cell.description = descript(cellname, site, antenna, azimuth, height, lac, bcch, bsc)
+
+        else:
+            umts_cell = dic_umts[district].newpolygon(name=cellname)
+            umts_cell.outerboundaryis = [(lon,lat,h), (d1[1],d1[0],h),(d2[1],d2[0],h),(lon,lat,h)]
+            umts_cell.style.polystyle.color = techSytle["UMTS"]["color"]
+            umts_cell.style.linestyle.color = techSytle["UMTS"]["color"]
+            umts_cell.style.linestyle.width = cellwidth
+            umts_cell.extrude = 1
+            umts_cell.fill = 1
+            umts_cell.outline = 1
+            umts_cell.altitudemode = simplekml.AltitudeMode.relativetoground
+            umts_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 #LTE kosmı
 #CELLNAME	EnodebName_CID	Sector	SiteID	CA_Stat	CA_Freqs	CITYCODE	MAIN_REGION	SUB_REGION
@@ -567,6 +675,8 @@ for cellname in cellnameListLTE:
         beam = techSytle[band]["beam"]
         outer = techSytle[band]["outer"]
         inner = techSytle[band]["inner"]
+        outer_ind = techSytle[band]["outer_ind"]
+        inner_ind = techSytle[band]["inner_ind"]
         d1 = getEndpoint(lat,lon,azimuth + beam/2,outer)
         d2 = getEndpoint(lat,lon,azimuth - beam/2,outer)
         d0 = getEndpoint(lat,lon,azimuth + beam/2,inner)
@@ -580,15 +690,27 @@ for cellname in cellnameListLTE:
         bcch = LTEDict["PHYCELLID"][cellname]
         bsc = ""
 
-        lte_cell = dic_lte[district].newpolygon(name=cellname)
-        lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(midout[1],midout[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(midin[1],midin[0],h),(d0[1],d0[0],h)]
-        lte_cell.style.polystyle.color = techSytle[band]["color"]
-        lte_cell.style.linestyle.color = techSytle[band]["color"]
-        lte_cell.style.linestyle.width = cellwidth
-        lte_cell.extrude = 1
-        lte_cell.fill = 1
-        lte_cell.outline = 1
-        lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
-        lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
+        if ('I' in cellname):
+
+            indoor_outer = polycircles.Polycircle(latitude=lat, longitude=lon, radius=outer_ind, number_of_vertices=36)
+            indoor_inner = polycircles.Polycircle(latitude=lat, longitude=lon, radius=inner_ind, number_of_vertices=36)
+            lte_cell = dic_lte[district].newpolygon(name=cellname, innerboundaryis=indoor_inner.to_kml(),
+                                                outerboundaryis=indoor_outer.to_kml())
+            lte_cell.style.polystyle.color = techSytle[band]["color"]
+            lte_cell.style.linestyle.color = techSytle[band]["color"]
+            lte_cell.extrude = 1
+            lte_cell.description = descript(cellname, site, antenna, azimuth, height, lac, bcch, bsc)
+
+        else:
+            lte_cell = dic_lte[district].newpolygon(name=cellname)
+            lte_cell.outerboundaryis = [(d0[1],d0[0],h), (d1[1],d1[0],h),(midout[1],midout[0],h),(d2[1],d2[0],h),(d4[1],d4[0],h),(midin[1],midin[0],h),(d0[1],d0[0],h)]
+            lte_cell.style.polystyle.color = techSytle[band]["color"]
+            lte_cell.style.linestyle.color = techSytle[band]["color"]
+            lte_cell.style.linestyle.width = cellwidth
+            lte_cell.extrude = 1
+            lte_cell.fill = 1
+            lte_cell.outline = 1
+            lte_cell.altitudemode = simplekml.AltitudeMode.relativetoground
+            lte_cell.description = descript(cellname,site,antenna,azimuth,height,lac,bcch,bsc)
 
 kml_asya.savekmz("ASYA.kmz",False)
