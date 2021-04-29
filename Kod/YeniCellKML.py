@@ -74,7 +74,6 @@ def descript(cell_name,site,antenna,azimuth,height,lactac,bcch,bsc):
 
 '''
 
-'''
 path  = '/LibraryFiles/'
 filename_1 = 'GSM_Engineering_CellDB.xls'
 filename_2 = 'UMTS_Engineering_CellDB.xls'
@@ -86,7 +85,6 @@ ftp.retrbinary("RETR " + filename_1 ,open(filename_1, 'wb').write)
 ftp.retrbinary("RETR " + filename_2 ,open(filename_2, 'wb').write)
 ftp.retrbinary("RETR " + filename_3 ,open(filename_3, 'wb').write)
 ftp.quit()
-'''
 
 LTE = pd.read_csv("LTE_Engineering_CellDB.xls",sep="\t",low_memory=False,index_col="CELLNAME")
 UMTS = pd.read_csv("UMTS_Engineering_CellDB.xls",sep="\t",low_memory=False,index_col="CELLNAME")
