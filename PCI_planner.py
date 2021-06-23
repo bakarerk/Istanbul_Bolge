@@ -1,5 +1,6 @@
 import pandas as pd
 import geopy.distance
+resultfile = open("result.txt",mode='w')
 pd. set_option("display.max_columns", None)
 LTE = pd.read_csv("LTE_Engineering_CellDB.xls",sep="\t",usecols=["CELLNAME","MAIN_REGION","SUB_REGION","City","DISTRICT","eNodebID","eNodebID_CellID","EnodebName","LOCALCELLID","DLEARFCN","PHYCELLID","ROOTSEQUENCEIDX","Lat_Site","Lon_Site","AZIMUTH","CellType"],index_col="CELLNAME")
 
@@ -19,6 +20,7 @@ for source_cell in cellnameListLTE900:
     source_earfcn = LTE900_dict["DLEARFCN"][source_cell]
     source_ccords = (source_lat,source_lon)
 
+    #target cell, source ile aynı band ve pci sahip
     target_cell = LTE900.copy()
     target_cell = target_cell[target_cell["PHYCELLID"] == source_pci]
     target_cell = target_cell.loc[(target_cell.index != source_cell)]
@@ -35,9 +37,12 @@ for source_cell in cellnameListLTE900:
             target_cell.at[target, "SourceCellname"] = source_cell
             target_cell.at[target, "TargetCellname"] = target
         except ValueError:
-            pass
+            target_cell.at[target, "new"] = 99999
 
     enyakin = target_cell["new"].min()
     print(target_cell[target_cell["new"] == enyakin].to_string(index=False,header=None))
+    resultfile.write(target_cell[target_cell["new"] == enyakin].to_string(index=False,header=None) + "\n")
+
+resultfile.close()
 
 
